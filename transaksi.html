@@ -5,6 +5,11 @@
 <style>
 body { font-family: 'Segoe UI', Arial; background: #0a1629; margin: 0; padding: 8px; color: #333; zoom: 0.9; }
 h2 { text-align: center; color: #d4af37; font-size: 18px; margin: 2px 0 8px 0; font-weight: bold; }
+/* === TRIAL BEB - SAMPAI 31-12-2026 === */
+.trial-banner { text-align:center; font-weight:bold; font-size:13px; padding:8px; border-radius:6px; margin:0 auto 8px auto; max-width:1600px; }
+.trial-aktif { background:#00c853; color:#fff; }
+.trial-mepet { background:#ffaa00; color:#000; }
+.trial-habis { background:#ff4444; color:#fff; }
 .box { background: white; border: 2px solid #d4af37; border-radius: 8px; padding: 10px; max-width: 1600px; margin: auto; }
 .form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 5px 8px; align-items: center; font-size: 11px; }
 .form-grid label { font-weight: 500; text-align: right; }
@@ -12,6 +17,7 @@ h2 { text-align: center; color: #d4af37; font-size: 18px; margin: 2px 0 8px 0; f
 .form-grid input:disabled, .form-grid select:disabled { background: #e9ecef; cursor: not-allowed; }
 .radio-group { display: flex; gap: 15px; grid-column: 2/3; font-size: 11px; }
 .btn-simpan { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; }
+.btn-simpan:disabled { background:#999 !important; cursor:not-allowed; }
 .btn-batal { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; width: 100%; margin-top: 5px; }
 .btn-setup { background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
 .total-box { background: #d4af37; color: #000; padding: 8px; border-radius: 4px; text-align: center; font-size: 13px; font-weight: bold; grid-column: 2/3; }
@@ -48,6 +54,8 @@ td.aksi-cell { white-space: nowrap; }
 </head>
 <body>
 <h2>TRANSAKSI PENYEWAAN</h2>
+<!-- === TRIAL BANNER BEB - SAMPAI 31-12-2026 === -->
+<div id="trialInfo" class="trial-banner trial-aktif">⏳ Cek Trial...</div>
 <div class="box">
 <div id="alertMobil" class="alert" style="display:none;"></div>
 <p id="statusFirebase" style="font-size:12px;text-align:center;font-weight:bold;">⏳ Menghubungkan ke Firebase rental2026...</p>
@@ -109,6 +117,35 @@ const db = getFirestore(app);
 const WA_TOKEN = "ISI_TOKEN_FONNTE_DI_HP_SENDIRI";
 const NOMOR_OWNER = "6282340152478";
 
+// ===== TRIAL BEB - SAMPAI 31-12-2026 - JANGAN DIHAPUS BEB! =====
+const TRIAL_END = new Date('2026-12-31T23:59:59');
+const TRIAL_END_TEXT = "31-12-2026";
+function cekTrial(){
+  let hariIni = new Date();
+  // Hitung sisa hari beb, tanpa jam biar enak
+  let tglHariIni = new Date(hariIni.getFullYear(), hariIni.getMonth(), hariIni.getDate());
+  let tglAkhir = new Date(2026, 11, 31); // 31-12-2026 beb, bulan 11 = Desember beb
+  let sisaHari = Math.ceil((tglAkhir - tglHariIni) / (1000*60*60*24));
+  let el = document.getElementById('trialInfo');
+  let btn = document.getElementById('btnSimpan');
+  let form = document.getElementById('formTransaksi');
+  if(hariIni > TRIAL_END){
+    if(el){ el.className = "trial-banner trial-habis"; el.innerText = "⛔ TRIAL HABIS (31-12-2026) - Hubungi Admin untuk Aktivasi FULL VERSION"; }
+    if(btn){ btn.disabled = true; btn.innerText = "⛔ TRIAL HABIS - 31-12-2026"; }
+    if(form){ form.querySelectorAll('input,select,button').forEach(x=>{ if(x.id!=='btnBatal') x.disabled = true; }); }
+    return false;
+  }
+  if(el){
+    if(sisaHari <= 30){ el.className = "trial-banner trial-mepet"; el.innerText = `⚠️ TRIAL: Sisa ${sisaHari} hari lagi - Sampai 31-12-2026 - Segera Aktivasi!`; }
+    else { el.className = "trial-banner trial-aktif"; el.innerText = `✅ TRIAL AKTIF - Sampai 31-12-2026 (Sisa ${sisaHari} hari)`; }
+  }
+  if(btn){ btn.disabled = false; }
+  return true;
+}
+window.cekTrial = cekTrial;
+// Cek pas load beb
+cekTrial();
+
 let dataCustomer = [];
 let dataCustomerReguler = [];
 let dataMobil = [];
@@ -124,8 +161,6 @@ onSnapshot(collection(db, "transaksi"), s => { dataTransaksi = s.docs.map(d=>({i
 onSnapshot(doc(db, "setup", "invoice"), async s => { if(s.exists()){ setupInvoice = s.data(); } else { await setDoc(doc(db, "setup", "invoice"), setupInvoice); } generateInvoice(); });
 function updateStatus(){ document.getElementById('statusFirebase').innerText = '✅ FIREBASE rental2026 TERHUBUNG - Transaksi: ' + dataTransaksi.length + ' | Mobil: ' + dataMobil.length + ' | Customer: ' + dataCustomer.length; document.getElementById('statusFirebase').style.color = 'green'; }
 
-// ===== FIX BEB - hitungOtomatis harus di window karena script type="module" =====
-// Kalau tidak pakai window, onchange="hitungOtomatis()" di HTML akan error & Jumlah Hari tidak pernah keisi.
 window.hitungOtomatis = function(){ window.hitungTotal(); };
 
 async function kirimWAOwnerSilent(pesan){
@@ -192,6 +227,7 @@ document.querySelectorAll('input[name="jenis_cus"]').forEach(radio => {
 window.closeModalCustReguler = function(){ document.getElementById('modalCustReguler').style.display = 'none'; document.querySelector('input[name="jenis_cus"][value="kredit"]').checked = true; loadDropdownKredit(); }
 document.getElementById('formCustReguler').addEventListener('submit', async function(e){
   e.preventDefault();
+  if(!cekTrial()){ alert("⛔ TRIAL HABIS BEB! Trial sampai 31-12-2026. Hubungi Admin untuk aktivasi!"); return; }
   let cusBaru = { no_ktp: reg_ktp.value, nama_customer: reg_nama.value, no_hp: reg_hp.value, no_sim: reg_sim.value, insurance: reg_insurance.value, email: reg_email.value, alamat: reg_alamat.value, hotel: reg_hotel.value, room_no: reg_room.value, pekerjaan: reg_pekerjaan.value, nationality: reg_nationality.value, jenis_kelamin: reg_jk.value, status_customer: 'Aktif' };
   let ref = await addDoc(collection(db, "customer_reguler"), cusBaru);
   id_customer.innerHTML = `<option value="${ref.id}">${cusBaru.nama_customer}</option>`; id_customer.value = ref.id;
@@ -226,16 +262,10 @@ id_customer.addEventListener('change', function(){
 });
 id_mobil.addEventListener('change', function(){ let m = dataMobil.find(x => x.id == this.value); if(m){ harga.value = m.harga || 0; window.hitungTotal(); } });
 harga.addEventListener('input', function(){ window.hitungTotal(); });
-// ===== FIX TAMBAHAN BEB - pasang listener juga biar gak cuma ngandelin onchange =====
 ['tgl_sewa','tgl_kembali','jam_keluar','jam_kembali','deposit','jumlah_helm'].forEach(function(id){
   let el = document.getElementById(id);
   if(el){ el.addEventListener('change', function(){ window.hitungTotal(); }); el.addEventListener('input', function(){ window.hitungTotal(); }); }
 });
-
-// ===== FIX UTAMA BEB - HITUNG JUMLAH HARI + TOTAL =====
-// Logika baru: hari = full 24 jam. Sisa jam di bawah 24 jam masuk Overtime, bukan jadi hari baru.
-// Contoh SS Bapak: 14/11 08:00 -> 21/11 18:00 = 178 jam = 7 hari + 10 jam overtime.
-// Standar Sewa TIDAK ditimpa lagi, tetap 10 beb.
 window.hitungTotal = function(){
   let elTglSewa = document.getElementById('tgl_sewa');
   let elTglKembali = document.getElementById('tgl_kembali');
@@ -253,13 +283,8 @@ window.hitungTotal = function(){
     let selisihJam = selisihMs / (1000 * 60 * 60);
     let hari = Math.floor(selisihJam / 24);
     if(hari == 0) hari = 1;
-    // Sisa jam setelah hari penuh = overtime. Kalau pas 24 jam kelipatan, overtime 0.
     let overtime = 0;
-    if(selisihJam >= 24){
-      overtime = Math.round(selisihJam - (hari * 24));
-    } else {
-      overtime = 0;
-    }
+    if(selisihJam >= 24){ overtime = Math.round(selisihJam - (hari * 24)); } else { overtime = 0; }
     if(overtime < 0) overtime = 0;
     let totalSewa = hari * hargaVal;
     let totalOT = overtime * (hargaVal * 0.1);
@@ -269,9 +294,7 @@ window.hitungTotal = function(){
     document.getElementById('total_bayar').innerText = total.toLocaleString('id-ID');
     document.getElementById('sisa_piutang').innerText = sisa.toLocaleString('id-ID');
     document.getElementById('jumlah_hari').value = hari;
-    // JANGAN timpa standar_sewa beb, biarkan tetap 10
   } else {
-    // Kalau tanggal belum lengkap, jangan hapus jumlah hari yang sudah ada beb, cuma reset total
     if(!elTglSewa.value || !elTglKembali.value){
       document.getElementById('overtime').value = '';
       document.getElementById('total_bayar').innerText = '0';
@@ -281,6 +304,7 @@ window.hitungTotal = function(){
   if(document.querySelector('input[name="jenis_cus"]:checked').value == 'kredit'){ info_piutang.style.display = 'block'; } else { info_piutang.style.display = 'none'; }
 }
 window.editTransaksi = function(id){
+  if(!cekTrial()){ alert("⛔ TRIAL HABIS BEB! Trial sampai 31-12-2026."); return; }
   idEdit = id; let t = dataTransaksi.find(x => x.id == id); if(!t) return;
   document.querySelectorAll('input[name="jenis_cus"]').forEach(r => r.disabled = true);
   no_invoice.value = t.no_invoice;
@@ -297,9 +321,8 @@ window.batalEdit = function(){
   document.querySelectorAll('input[name="jenis_cus"]').forEach(r => r.disabled = false); id_customer.disabled = false; id_mobil.disabled = false;
   let info = document.getElementById('info_lock_cus'); if(info) info.remove();
   document.querySelector('input[name="jenis_cus"][value="kredit"]').checked = true; loadDropdownKredit(); loadDropdownMobil(); generateInvoice();
+  cekTrial();
 };
-
-// ==== HAPUS FIX BEB - 100% JALAN BEB! ====
 window.hapusTransaksi = async function(id){
   let t = dataTransaksi.find(x => x.id == id);
   if(!t){ alert('❌ Data gak ketemu beb! Refresh dulu beb!'); return; }
@@ -308,52 +331,23 @@ window.hapusTransaksi = async function(id){
   let namaCus = cus?.nama_customer || t.id_customer || '-';
   let platMob = mob?.plat || t.id_mobil || '-';
   let totalRp = parseInt(t.total_bayar||0).toLocaleString('id-ID');
-
   if(!confirm('Yakin mau hapus?\n\nInvoice: '+t.no_invoice+'\nCustomer: '+namaCus+'\nMobil: '+platMob+'\nTotal: Rp '+totalRp+'\n\nHapus akan masuk ke hapus.html beb!')) return;
-
   let waktu = new Date().toLocaleString('id-ID');
   let admin = "Admin";
-
-  // 1. WA OWNER - JALAN DI BELAKANG, GAK BIKIN MACET BEB!
   let pesanWA = `⚠️ *HAPUS TRANSAKSI*\nWaktu: ${waktu}\nInvoice: ${t.no_invoice}\nCustomer: ${namaCus}\nMobil: ${platMob}\nTotal: Rp ${totalRp}`;
   kirimWAOwnerSilent(pesanWA);
-
-  // 2. SIMPAN LOG LENGKAP BEB - UNTUK PULIHKAN & CETAK DI hapus.html BEB!
-  let logData = {
-    waktu: waktu,
-    timestamp: Date.now(),
-    admin: admin,
-    jenis: 'invoice',
-    invoice: t.no_invoice || '',
-    customer: namaCus,
-    mobil: mob?.merk || '',
-    plat: platMob,
-    total: t.total_bayar || 0,
-    deposit: t.deposit || 0,
-    sisa_piutang: t.sisa_piutang || 0,
-    id_transaksi_asli: id,
-    target_collection: 'transaksi',
-    data_asli: t  // INI PENTING BEB! BIAR BISA PULIH FULL BEB!
-  };
-
+  let logData = { waktu: waktu, timestamp: Date.now(), admin: admin, jenis: 'invoice', invoice: t.no_invoice || '', customer: namaCus, mobil: mob?.merk || '', plat: platMob, total: t.total_bayar || 0, deposit: t.deposit || 0, sisa_piutang: t.sisa_piutang || 0, id_transaksi_asli: id, target_collection: 'transaksi', data_asli: t };
   try { await addDoc(collection(db, "log_hapus"), logData); } catch(e){ console.log('log_hapus gagal:', e.message); }
   try { await addDoc(collection(db, "logHapus"), logData); } catch(e){ console.log('logHapus gagal:', e.message); }
-
-  // 3. BALIKIN MOBIL JADI ADA
   try { if(t.id_mobil){ await updateDoc(doc(db, "armada_mobil", t.id_mobil), { status_mobil: 'Ada' }); } } catch(e){ console.log('Balikin mobil gagal:', e.message); }
-
-  // 4. HAPUS TRANSAKSI - INI YANG PENTING BEB, HARUS JALAN BEB!
-  try{
-    await deleteDoc(doc(db, "transaksi", id));
-    alert('✅ Berhasil dihapus beb! Invoice '+t.no_invoice+' masuk ke hapus.html beb! Cek tombol Pulihkan & Cetak beb!');
-  }catch(e){
-    alert('❌ GAGAL HAPUS beb: '+e.message+'\n\nCek Rules Firebase beb, harus allow delete beb!');
-  }
+  try{ await deleteDoc(doc(db, "transaksi", id)); alert('✅ Berhasil dihapus beb! Invoice '+t.no_invoice+' masuk ke hapus.html beb! Cek tombol Pulihkan & Cetak beb!'); }catch(e){ alert('❌ GAGAL HAPUS beb: '+e.message+'\n\nCek Rules Firebase beb, harus allow delete beb!'); }
 };
-
 window.cetakInvoice = function(id){ let t = dataTransaksi.find(x => x.id == id); if(!t) return; window.open(`invoice.html?id=${t.id}`, '_blank'); };
 document.getElementById('formTransaksi').addEventListener('submit', async function(e){
-  e.preventDefault(); id_customer.disabled = false; id_mobil.disabled = false;
+  e.preventDefault();
+  // === CEK TRIAL BEB - PALING ATAS, SEBELUM SIMPAN! ===
+  if(!cekTrial()){ alert("⛔ TRIAL HABIS BEB!\n\nTrial APAMA habis tanggal 31-12-2026.\nHubungi Admin untuk aktivasi FULL VERSION beb!"); return; }
+  id_customer.disabled = false; id_mobil.disabled = false;
   let jenis = document.querySelector('input[name="jenis_cus"]:checked').value;
   let totalVal = parseInt(total_bayar.innerText.replace(/[^0-9]/g, '')) || 0;
   let depositVal = parseInt(deposit.value) || 0;
