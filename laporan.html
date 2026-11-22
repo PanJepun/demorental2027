@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LAPORAN</title>
+<style>
+body { font-family: 'Segoe UI', Arial; background: #0a1629; margin: 0; padding: 20px; color: #333; }
+.container { background: white; border: 3px solid #d4af37; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.btn-kembali { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-bottom: 15px; }
+.tab { display: flex; gap: 5px; border-bottom: 2px solid #d4af37; margin-bottom: 20px; }
+.tab button { padding: 10px 20px; border: none; background: #eee; cursor: pointer; font-weight: bold; }
+.tab button.active { background: #d4af37; color: #000; }
+h2 { color: #000; }
+.toolbar { display:flex; gap:10px; margin-bottom:15px; align-items:center; flex-wrap: wrap; }
+.toolbar input { padding:8px; width:250px; border:1px solid #ccc; border-radius:4px; }
+.btn-cetak { background:#17a2b8; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; }
+.btn-excel { background:#28a745; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #d4af37; color: #000; padding: 10px; border: 1px solid #aaa; }
+td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+.cards { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+.card { flex:1; min-width:140px; background:#fff3cd; border:1px solid #d4af37; border-radius:8px; padding:10px; text-align:center; }
+.card b { font-size:18px; display:block; }
+</style>
+</head>
+<body>
+<div class="container">
+    <button class="btn-kembali" onclick="window.location='index.html'">← Kembali</button>
+    <p id="statusFirebase" style="font-size:12px;text-align:center;font-weight:bold;">⏳ Menghubungkan ke Firebase fir-panjepun...</p>
+    <div class="tab">
+        <button class="active" onclick="gantiTab('transaksi', this)">LAPORAN TRANSAKSI</button>
+        <button onclick="gantiTab('piutang', this)">LAPORAN PIUTANG</button>
+        <button onclick="gantiTab('pendapatan', this)">LAPORAN PENDAPATAN</button>
+    </div>
+    <h2 id="judulLaporan">Laporan Semua Transaksi</h2>
+    <div class="cards">
+      <div class="card"><span>Total Transaksi</span><b id="cardTotal">0</b></div>
+      <div class="card"><span>Total Omzet</span><b id="cardOmzet">Rp 0</b></div>
+      <div class="card"><span>Total Piutang</span><b id="cardPiutang">Rp 0</b></div>
+    </div>
+    <div class="toolbar">
+        <input type="text" id="searchNama" placeholder="🔍 Cari Nama Customer..." onkeyup="filterTabel()">
+        <button class="btn-cetak" onclick="printPreview()">🖨️ Cetak Preview</button>
+        <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+    </div>
+    <table id="tabelLaporan">
+        <thead id="headLaporan"></thead>
+        <tbody></tbody>
+    </table>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+let dataTransaksi = [];
+let dataCustomer = [];
+let dataCustomerReguler = [];
+let dataMobil = [];
+let tabAktif = 'transaksi';
+onSnapshot(collection(db, "transaksi"), s => { dataTransaksi = s.docs.map(d=>({id:d.id, ...d.data()})); updateCards(); tampilkanLaporan(); });
+onSnapshot(collection(db, "customer"), s => { dataCustomer = s.docs.map(d=>({id:d.id, ...d.data()})); tampilkanLaporan(); });
+onSnapshot(collection(db, "customer_reguler"), s => { dataCustomerReguler = s.docs.map(d=>({id:d.id, ...d.data()})); tampilkanLaporan(); });
+onSnapshot(collection(db, "armada_mobil"), s => {
+  dataMobil = s.docs.map(d=>({id:d.id, ...d.data()}));
+  document.getElementById('statusFirebase').innerText = '✅ FIREBASE fir-panjepun TERHUBUNG - Total: ' + dataTransaksi.length + ' transaksi';
+  document.getElementById('statusFirebase').style.color = 'green';
+  tampilkanLaporan();
+});
+function updateCards(){
+  let omzet = dataTransaksi.reduce((s,t)=> s + parseInt(t.total_bayar || t.total || 0), 0);
+  let piutang = dataTransaksi.filter(t=> t.status != 'Lunas').reduce((s,t)=> s + parseInt(t.sisa_bayar || t.total_bayar || 0), 0);
+  document.getElementById('cardTotal').innerText = dataTransaksi.length + ' x';
+  document.getElementById('cardOmzet').innerText = 'Rp ' + omzet.toLocaleString('id-ID');
+  document.getElementById('cardPiutang').innerText = 'Rp ' + piutang.toLocaleString('id-ID');
+}
+function getNamaCustomer(t){
+  if(t.nama_customer) return t.nama_customer;
+  let id = t.id_customer;
+  let c1 = dataCustomer.find(c => c.id == id);
+  if(c1) return c1.nama_customer || c1.nama || '-';
+  let c2 = dataCustomerReguler.find(c => c.id == id);
+  if(c2) return c2.nama_customer || '-';
+  return '-';
+}
+function getNamaMobil(t){
+  if(t.plat || t.no_polisi) return (t.plat || t.no_polisi);
+  let mob = dataMobil.find(m => m.id == t.id_mobil);
+  return mob? (mob.plat || mob.no_polisi || '-') : '-';
+}
+window.gantiTab = function(tab, el){
+    tabAktif = tab;
+    document.querySelectorAll('.tab button').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    tampilkanLaporan();
+}
+function tampilkanLaporan(){
+    let tbody = document.querySelector('#tabelLaporan tbody');
+    let thead = document.querySelector('#headLaporan');
+    let judul = document.querySelector('#judulLaporan');
+    tbody.innerHTML = '';
+    if(tabAktif == 'transaksi'){
+        judul.innerText = 'Laporan Semua Transaksi';
+        thead.innerHTML = `<tr><th>No</th><th>Invoice</th><th>Customer</th><th>Mobil</th><th>Sewa</th><th>Total</th><th>Status</th></tr>`;
+        dataTransaksi.forEach((t, i) => {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${t.no_invoice || '-'}</td><td>${getNamaCustomer(t)}</td><td>${getNamaMobil(t)}</td><td>${t.tgl_sewa || t.tanggal_sewa || t.tanggal || '-'}</td><td>Rp ${parseInt(t.total_bayar || t.total || 0).toLocaleString('id-ID')}</td><td>${t.status || 'Sewa'}</td></tr>`;
+        })
+    } else if(tabAktif == 'piutang'){
+        judul.innerText = 'Laporan Piutang';
+        thead.innerHTML = `<tr><th>No</th><th>Invoice</th><th>Customer</th><th>Mobil</th><th>Sewa</th><th>Piutang</th></tr>`;
+        let piutang = dataTransaksi.filter(t => t.status != 'Lunas');
+        let no = 0;
+        piutang.forEach((t) => {
+            let sisa = parseInt(t.sisa_bayar || t.total_bayar || 0);
+            if(sisa > 0){ no++;
+                tbody.innerHTML += `<tr><td>${no}</td><td>${t.no_invoice || '-'}</td><td>${getNamaCustomer(t)}</td><td>${getNamaMobil(t)}</td><td>${t.tgl_sewa || t.tanggal_sewa || '-'}</td><td style="color:red; font-weight:bold;">Rp ${sisa.toLocaleString('id-ID')}</td></tr>`;
+            }
+        })
+    } else if(tabAktif == 'pendapatan'){
+        judul.innerText = 'Laporan Pendapatan';
+        thead.innerHTML = `<tr><th>No</th><th>Invoice</th><th>Customer</th><th>Mobil</th><th>Sewa</th><th>Pendapatan</th></tr>`;
+        let lunas = dataTransaksi.filter(t => t.status == 'Lunas');
+        if(lunas.length == 0){ lunas = dataTransaksi; }
+        lunas.forEach((t, i) => {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${t.no_invoice || '-'}</td><td>${getNamaCustomer(t)}</td><td>${getNamaMobil(t)}</td><td>${t.tgl_sewa || t.tanggal_sewa || '-'}</td><td style="color:green; font-weight:bold;">Rp ${parseInt(t.total_bayar || t.total || 0).toLocaleString('id-ID')}</td></tr>`;
+        })
+    }
+}
+window.filterTabel = function(){
+    let input = document.getElementById('searchNama').value.toLowerCase();
+    let rows = document.querySelectorAll('#tabelLaporan tbody tr');
+    rows.forEach(row => {
+        let nama = row.cells[2] ? row.cells[2].innerText.toLowerCase() : '';
+        row.style.display = nama.includes(input)? '' : 'none';
+    })
+}
+window.printPreview = function(){
+    let printContents = document.getElementById('tabelLaporan').outerHTML;
+    let win = window.open('', '', 'height=700,width=1000');
+    win.document.write('<html><head><title>Preview</title><style>body{font-family:Arial;} h2{text-align:center;} table{width:100%; border-collapse:collapse;} th{background:#d4af37; color:#000; padding:8px;} td{padding:6px; border:1px solid #ddd; text-align:center;}</style></head><body>');
+    win.document.write('<h2>'+document.getElementById('judulLaporan').innerText+'</h2>');
+    win.document.write(printContents);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
+}
+window.exportExcel = function(){
+    let table = document.getElementById('tabelLaporan');
+    let html = table.outerHTML;
+    let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = document.getElementById('judulLaporan').innerText + '_' + new Date().toISOString().slice(0,10) + '.xls';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+</script>
+</body>
+</html>

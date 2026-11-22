@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DASHBOARD RENTAL - rental2026 - V11 WARNING 1 LAYAR</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+body{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#0a1629 0%,#12233a 100%);margin:0;padding:0;color:#333}
+.header{background:linear-gradient(90deg,#d4af37 0%,#f7eb81 100%);padding:12px 20px;color:#000;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.3);gap:15px}
+.header-kiri{display:flex;align-items:center;gap:15px;flex:1;min-width:0}
+.header h1{margin:0;font-size:18px;white-space:nowrap}
+.marquee{flex:1;overflow:hidden;background:rgba(0,0,0,0.12);border-radius:50px;padding:6px 15px}
+.marquee span{display:inline-block;white-space:nowrap;font-size:13px;font-weight:700;animation:jalan 18s linear infinite}
+@keyframes jalan{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.header-kanan{font-size:12px;font-weight:600;white-space:nowrap}
+.navbar{background:#1a2a4a;padding:12px 20px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:3px solid #d4af37}
+.navbar a{color:white;text-decoration:none;background:#2c3e50;padding:8px 18px;border-radius:50px;font-size:13px;font-weight:600;border:1px solid #3a4a60}
+.navbar a:hover{background:#d4af37;color:#000}
+.navbar a.active{background:#d4af37;color:#000}
+.container{padding:20px}
+.box{background:white;border:2px solid #d4af37;border-radius:8px;padding:20px;max-width:1200px;margin:auto}
+.slider{position:relative;max-width:1200px;margin:0 auto 20px auto;overflow:hidden;border-radius:12px;border:2px solid #d4af37;background:#1a2a4a;box-shadow:0 5px 20px rgba(0,0,0,0.4)}
+.slides{display:flex;transition:transform 0.6s ease-in-out}
+.slide{min-width:100%;display:flex}
+.slide-img{width:55%;background:#000;display:flex;align-items:center;justify-content:center}
+.slide-img img{width:100%;height:380px;object-fit:contain}
+.slide-info{width:45%;padding:25px;color:white;background:linear-gradient(135deg,#12233a 0%,#1a2a4a 100%);display:flex;flex-direction:column;justify-content:space-between}
+.slide-info h3{margin:0 0 10px 0;color:#d4af37;font-size:22px}
+.slide-info .plat{background:#d4af37;color:#000;padding:4px 12px;border-radius:4px;font-weight:bold;display:inline-block;margin-bottom:10px}
+.slide-info .detail-grid{display:grid;grid-template-columns:110px 1fr;gap:8px;font-size:13px;margin:12px 0}
+.harga-box{background:rgba(212,175,55,0.2);padding:10px;border-radius:6px;margin:12px 0;border-left:3px solid #d4af37}
+.harga-box .value{font-size:20px;color:#d4af37;font-weight:bold}
+.btn-wa{background:#25D366;color:white;padding:12px 15px;border-radius:50px;text-decoration:none;font-weight:bold;text-align:center;border:none;cursor:pointer;width:100%}
+.btn-wa:disabled{background:#6b7280 !important;cursor:not-allowed !important;opacity:0.6}
+.prev,.next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(212,175,55,0.95);color:#000;border:none;padding:12px 16px;border-radius:50%;z-index:10;cursor:pointer;font-size:18px;font-weight:bold}
+.prev{left:12px}.next{right:12px}
+.dots{text-align:center;padding:12px;background:#1a2a4a}
+.dot{display:inline-block;width:12px;height:12px;margin:0 5px;background:#555;border-radius:50%;cursor:pointer}
+.dot.active{background:#d4af37}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.card{background:white;border-left:5px solid #00c853;padding:14px 18px;border-radius:6px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.card h4{margin:0 0 6px 0;font-size:11px;color:#e53935;text-transform:uppercase;font-weight:700}
+.card h2{margin:0;font-size:26px;color:#000}
+.info-armada{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+.info-card{background:#f8f9fa;border:1px solid #ddd;border-radius:8px;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+.menu-title{color:#d4af37;margin-bottom:12px;font-size:15px;font-weight:700}
+.menu-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:10px}
+.menu-item{background:#f8f9fa;border:2px solid #ddd;border-radius:8px;padding:18px 10px;text-align:center;cursor:pointer;transition:0.3s}
+.menu-item:hover{border-color:#d4af37;background:#fff8e1;transform:translateY(-3px)}
+.menu-item img{width:40px;height:40px;object-fit:contain;margin-bottom:6px}
+.menu-item h3{margin:0;color:#1a2a4a;font-size:13px;font-weight:600}
+.katalog-title{color:#d4af37;margin:25px 0 12px 0;font-size:17px;font-weight:700;border-left:4px solid #d4af37;padding-left:10px}
+.katalog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.katalog-card{background:white;border:1px solid #ddd;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;flex-direction:column}
+.katalog-card img{width:100%;height:150px;object-fit:cover;background:#000}
+.katalog-info{padding:10px;flex:1}
+.katalog-info h4{margin:0 0 4px 0;font-size:14px;color:#1a2a4a}
+.katalog-info .harga{font-size:15px;color:#e53935;font-weight:700}
+.status-ada{background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:bold}
+.status-keluar{background:#f8d7da;color:#721c24;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:bold}
+.backup-box{background:#f0fdf4;border:2px solid #22c55e;border-radius:8px;padding:15px;margin-top:18px}
+.btn-backup{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px}
+.btn-hijau{background:#22c55e;color:white}
+.btn-biru{background:#3b82f6;color:white}
+.btn-ungu{background:#8b5cf6;color:white}
+.backup-table{width:100%;border-collapse:collapse;margin-top:10px;background:white}
+.backup-table th{background:#1a2a4a;color:white;padding:8px;text-align:left;font-size:12px}
+.backup-table td{border-bottom:1px solid #ddd;padding:8px;font-size:12px}
+#backupDetail{background:#0a1629;color:#d4af37;padding:12px;border-radius:8px;font-size:11px;white-space:pre-wrap;max-height:300px;overflow:auto;display:none;margin-top:10px}
+.master-box{background:#f5f3ff;border:2px solid #8b5cf6;border-radius:8px;padding:15px;margin-top:18px}
+.modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:999;padding:10px;box-sizing:border-box}
+.modal-box{background:white;border-radius:12px;max-width:440px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.5)}
+.modal-head{background:#dc2626;color:white;padding:10px 12px;text-align:center;flex-shrink:0}
+.modal-head h2{margin:0;font-size:16px;line-height:1.2}
+.modal-head p{margin:3px 0 0 0;font-size:11px}
+.modal-body{padding:10px 14px;font-size:12px;line-height:1.4;color:#334155;overflow-y:auto;flex:1}
+.modal-body .warn-box{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px;margin:8px 0;font-size:11px;line-height:1.4}
+.modal-body input[type=text]{width:100%;padding:9px;border:2px solid #e5e7eb;border-radius:8px;margin-top:5px;font-size:13px;font-weight:700;text-transform:uppercase;box-sizing:border-box}
+.modal-foot{display:flex;gap:8px;padding:10px 14px 12px 14px;background:#fff;border-top:1px solid #eee;flex-shrink:0}
+.btn-batal{flex:1;padding:12px;border:1px solid #ddd;background:#e5e7eb;border-radius:8px;font-weight:800;cursor:pointer;font-size:13px}
+.btn-restore-warn{flex:1.2;padding:12px;border:none;background:#dc2626;color:white;border-radius:8px;font-weight:800;cursor:pointer;font-size:13px}
+.btn-restore-warn:disabled{background:#9ca3af;cursor:not-allowed}
+@media(max-width:1000px){.card-grid,.menu-grid,.info-armada,.katalog-grid{grid-template-columns:repeat(2,1fr)}.slide{flex-direction:column}.slide-img,.slide-info{width:100%}}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="header-kiri"><h1>🚗 DASHBOARD RENTAL - rental2026</h1><div class="marquee"><span>APAMA BIKE RENTAL BALI - V11 WARNING 1 LAYAR - FIREBASE ACTIVE - GROUP RENTAL APAMA HZ8HAZkVT2sChPO7j5jjq2 - SLIDE LANCAR BEB!</span></div></div>
+<span class="header-kanan" id="tgl_sekarang"></span>
+</div>
+<div class="navbar">
+<a href="dashboard.html" class="active">Dashboard</a>
+<a href="mobil.html">Data Motor</a>
+<a href="transaksi.html">Transaksi</a>
+<a href="customer.html">Customer Kredit</a>
+<a href="custreg.html">Customer Reguler</a>
+<a href="laporan.html">Laporan</a>
+<a href="tools.html">⚙️ Tools</a>
+<a href="#backupSection" style="background:#22c55e;color:#fff;">💾 Backup</a>
+<a href="hapus.html" style="background:#dc3545;">🗑️ Riwayat Hapus</a>
+</div>
+<div class="container">
+<div class="slider" id="sliderMobil"><div class="slides" id="slidesContainer"></div><button class="prev" onclick="geserSlide(-1)">❮</button><button class="next" onclick="geserSlide(1)">❯</button><div class="dots" id="dotsContainer"></div></div>
+<div class="box">
+<div class="card-grid"><div class="card"><h4>TOTAL MOTOR</h4><h2 id="total_mobil">0</h2></div><div class="card"><h4>STATUS ADA</h4><h2 id="mobil_ada">0</h2></div><div class="card"><h4>STATUS KELUAR</h4><h2 id="mobil_keluar">0</h2></div><div class="card"><h4>TOTAL TRANSAKSI</h4><h2 id="trx_total">0</h2></div></div>
+<div class="info-armada"><div class="info-card"><span>🏍️ Motor Tersedia Hari Ini</span><span id="mobil_tersedia">0 Unit</span></div><div class="info-card"><span>📅 Motor Disewa Bulan Ini</span><span id="mobil_disewa_bulan">0 Unit</span></div></div>
+<p id="statusFirebase" style="text-align:center;font-size:11px;font-weight:bold;white-space:pre-wrap">⏳ Menghubungkan ke Firebase rental2026 + Fonnte...</p>
+<h3 class="menu-title">MENU UTAMA</h3>
+<div class="menu-grid">
+<div class="menu-item" onclick="window.location='mobil.html'"><img src="https://cdn-icons-png.flaticon.com/512/1076/1076965.png"><h3>Data Motor</h3></div>
+<div class="menu-item" onclick="window.location='transaksi.html'"><img src="https://cdn-icons-png.flaticon.com/512/2821/2821001.png"><h3>Transaksi Sewa</h3></div>
+<div class="menu-item" onclick="window.location='customer.html'"><img src="https://cdn-icons-png.flaticon.com/512/219/219983.png"><h3>Customer Kredit</h3></div>
+<div class="menu-item" onclick="window.location='laporan.html'"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"><h3>Laporan</h3></div>
+<div class="menu-item" onclick="window.location='custreg.html'"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png"><h3>Customer Reguler</h3></div>
+<div class="menu-item" onclick="window.location='tools.html'" style="border-color:#d4af37;background:#fff8e1"><img src="https://cdn-icons-png.flaticon.com/512/3524/3524636.png"><h3>⚙️ Tools</h3></div>
+<div class="menu-item" onclick="document.getElementById('backupSection').scrollIntoView({behavior:'smooth'})" style="border-color:#22c55e;background:#f0fdf4"><img src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png"><h3 style="color:#15803d">💾 Backup Data</h3></div>
+<div class="menu-item" onclick="window.location='hapus.html'" style="border-color:#dc3545;background:#fff5f5"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png"><h3 style="color:#dc3545">🗑️ Riwayat Hapus</h3></div>
+</div>
+<div class="backup-box" id="backupSection">
+  <h3 style="margin:0 0 5px 0;color:#15803d;">💾 BACKUP / LIHAT DATA BACKUP - ANTI DOUBLE + WARNING 1 LAYAR</h3>
+  <p style="font-size:12px;color:#64748b;margin:0 0 10px 0;">Restore cuma nambah yang hilang aja beb. Data baru tidak tertimpa, tidak double. Contoh: Backup 10, data jadi 12, restore tetap 12.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn-backup btn-hijau" onclick="buatBackup()">📥 Backup Sekarang</button>
+    <button class="btn-backup btn-biru" onclick="loadBackupList()">👀 Lihat Backup</button>
+    <button class="btn-backup btn-ungu" onclick="exportBackupJSON()">⬇️ Download JSON Terakhir</button>
+    <input type="file" id="fileRestore" accept=".json" style="display:none;" onchange="siapkanRestoreFile(event)">
+    <button class="btn-backup" style="background:#f59e0b;color:#fff;" onclick="document.getElementById('fileRestore').click()">📂 Restore dari File JSON</button>
+  </div>
+  <p id="statusBackup" style="font-size:12px;font-weight:700;color:#15803d;margin:10px 0 0 0;"></p>
+  <table class="backup-table" id="tabelBackup" style="display:none;"><thead><tr><th>Tanggal Backup</th><th>Motor</th><th>Transaksi</th><th>User</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+  <div id="backupDetail"></div>
+</div>
+<div class="master-box" id="boxLihatPassword" style="display:none;">
+  <h3 style="margin:0 0 5px 0;color:#6d28d9;">👑 KHUSUS MASTER - LIHAT PASSWORD USER</h3>
+  <p style="font-size:12px;color:#64748b;margin:0 0 10px 0;">Hanya muncul kalau Bapak login pakai Master Key. Karyawan tidak bisa lihat ini beb.</p>
+  <button class="btn-backup btn-ungu" onclick="lihatUserTerdaftar()">👁️ Lihat User + Password</button>
+  <div id="daftarUser"></div>
+</div>
+</div>
+<h3 class="katalog-title">KATALOG MOTOR KAMI - rental2026</h3>
+<div class="katalog-grid" id="katalogContainer"></div>
+</div>
+<div class="modal-bg" id="modalRestore" onclick="if(event.target===this) tutupModalRestore()">
+  <div class="modal-box">
+    <div class="modal-head"><h2>⚠️ MAU RESTORE DATA?</h2><p>Baca sebentar aja beb, jangan asal klik!</p></div>
+    <div class="modal-body">
+      <div id="isiWarningRestore"></div>
+      <div class="warn-box">
+        <b>✅ Yang terjadi:</b> Cuma nambah yang <b>hilang</b>. Yang udah ada <b>tidak ditimpa</b>. Data baru <b>tetap ada</b>. <b>Tidak double.</b><br>
+        Contoh: Backup 10, sekarang 12, restore tetap <b>12</b>.
+      </div>
+      <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;"><input type="checkbox" id="cekSetuju" onchange="cekTombolRestore()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;"><span>Saya paham, restore cuma nambah yang hilang.</span></label>
+      <p style="margin:8px 0 0 0;font-weight:700;">Ketik <span style="color:#dc2626;">RESTORE</span> :</p>
+      <input type="text" id="ketikRestore" placeholder="KETIK RESTORE" oninput="cekTombolRestore()" autocomplete="off">
+      <p id="pesanKetik" style="font-size:11px;color:#dc2626;margin:4px 0 0 0;"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-batal" onclick="tutupModalRestore()">❌ BATAL</button>
+      <button class="btn-restore-warn" id="btnKonfirmasiRestore" disabled onclick="jalankanRestore()">♻️ YA, RESTORE</button>
+    </div>
+  </div>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const URL_FETCH_GROUP = "https://api.fonnte.com/fetch-group";
+//const URL_GET_GROUP = "https://api.fonnte.com/get-whatsapp-group";
+const URL_SEND = "https://api.fonnte.com/send";
+const WA_TOKEN = "PAKAI_TOKEN_LAMA_BAPAK";
+const NOMOR_WA_ADMIN = "6282340152478";
+
+let GROUP_ID_RENTAL_APAMA = localStorage.getItem("rental_apama_group_id") || "";
+let GROUP_NAME = localStorage.getItem("rental_apama_group_name") || "Rental Apama";
+let dataMobil = []; let dataTransaksi = []; let dataUser = [];
+let slideIndex = 1; let sliderSudahRender = false;
+let backupTerakhir = null;
+let restoreYangDipilih = null;
+let cachePassDashboard = {};
+document.getElementById('tgl_sekarang').innerText = new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function getUserLogin(){
+  try{ return JSON.parse(localStorage.getItem("apama_user") || "{}"); }catch(e){ return {}; }
+}
+window.addEventListener('load', function(){
+  let user = getUserLogin();
+  let box = document.getElementById('boxLihatPassword');
+  let isMasterDash = (user.isMaster === true || String(user.username||"").toLowerCase() === "master");
+  if(isMasterDash){ if(box) box.style.display = "block"; }
+  else { if(box) box.style.display = "none"; }
+});
+async function lihatUserTerdaftar(){
+  let user = getUserLogin();
+  let isMasterDash2 = (user.isMaster === true || String(user.username||"").toLowerCase() === "master");
+  if(!isMasterDash2){ alert("Maaf beb, cuma Master yang boleh lihat!"); return; }
+  let tempat = document.getElementById('daftarUser');
+  tempat.innerHTML = "⏳ Lagi ngeload beb...";
+  try{
+    let snapshot = await db.collection("users").get();
+    if(snapshot.empty){ tempat.innerHTML = "Belum ada user beb."; return; }
+    let html = `<table class="backup-table" style="display:table;"><thead><tr><th>Nama</th><th>Username</th><th>Role</th><th>Password</th><th>Lihat</th></tr></thead><tbody>`;
+    snapshot.forEach(doc => {
+      let u = doc.data();
+      cachePassDashboard[doc.id] = u.password || '';
+      html += `<tr><td>${u.nama || '-'}</td><td>${u.username || '-'}</td><td>${u.role || '-'}</td><td><span id="pass-${doc.id}">••••••</span></td><td><button class="btn-backup btn-ungu" style="padding:5px 10px;" onclick="lihatPassUser('${doc.id}', this)">👁️</button></td></tr>`;
+    });
+    html += `</tbody></table>`;
+    tempat.innerHTML = html;
+  }catch(e){ tempat.innerHTML = "Error: "+e.message; }
+}
+function lihatPassUser(id, tombol){
+  let span = document.getElementById('pass-' + id);
+  let passwordAsli = cachePassDashboard[id] || '';
+  if(span.textContent === "••••••"){ span.textContent = passwordAsli; tombol.textContent = "🙈"; }
+  else { span.textContent = "••••••"; tombol.textContent = "👁️"; }
+}
+function norm(m){return {...m,status: m.status_mobil || m.status || 'Ada',foto: m.foto || m.foto_mobil || '',plat: m.plat || m.no_polisi || '-',merk: m.merk || '',type: m.type || '',};}
+function getStatus(status){let s=String(status||'ADA').toUpperCase(); if(s=='KELUAR') return '<span class="status-keluar">KELUAR</span>'; return '<span class="status-ada">ADA</span>';}
+function renderAll(){
+  let totalArmada=dataMobil.length;
+  let statusAda=dataMobil.filter(m=>String(m.status||'').toUpperCase()=='ADA').length;
+  let statusKeluar=totalArmada - statusAda;
+  document.getElementById('total_mobil').innerText=totalArmada;
+  document.getElementById('mobil_ada').innerText=statusAda;
+  document.getElementById('mobil_keluar').innerText=statusKeluar;
+  document.getElementById('trx_total').innerText=dataTransaksi.length;
+  document.getElementById('mobil_tersedia').innerText=statusAda+' Unit';
+  let bulanIni=new Date().getMonth(); let tahunIni=new Date().getFullYear();
+  let mobilDisewaBulan=dataTransaksi.filter(t=>{let d=new Date(t.tgl_sewa||t.created_at); return d.getMonth()==bulanIni && d.getFullYear()==tahunIni;}).length;
+  document.getElementById('mobil_disewa_bulan').innerText=mobilDisewaBulan+' Unit';
+  document.getElementById('statusFirebase').innerText = `✅ FIREBASE: ${totalArmada} motor | ${dataTransaksi.length} transaksi | ${dataUser.length} user | Slide: ${slideIndex} | Group: ${GROUP_ID_RENTAL_APAMA || 'Belum set'}`;
+  document.getElementById('statusFirebase').style.color = 'green';
+  if(!sliderSudahRender || document.querySelectorAll('.slide').length !== totalArmada){ renderSlider(); sliderSudahRender = true; }
+  renderKatalog();
+}
+function renderSlider(){
+  let slidesContainer=document.getElementById('slidesContainer');
+  let dotsContainer=document.getElementById('dotsContainer');
+  if(dataMobil.length==0){document.getElementById('sliderMobil').innerHTML='<div style="text-align:center;padding:80px;color:#d4af37;">Belum ada data motor</div>';return;}
+  slidesContainer.innerHTML=''; dotsContainer.innerHTML='';
+  dataMobil.forEach((m,i)=>{
+    let foto=m.foto||'https://placehold.co/600x380/0a1629/d4af37?text=No+Foto';
+    let harga=parseInt(m.harga||0).toLocaleString('id-ID');
+    let namaMotor=`${m.merk||''} ${m.type||''} ${m.tahun||''}`;
+    let isKeluar=String(m.status||'ADA').toUpperCase()==='KELUAR';
+    let btnBookingHtml=isKeluar?`<button class="btn-wa" disabled>⛔ SEDANG DISEWA</button>`:`<button class="btn-wa btnBooking" data-nama="${namaMotor}" data-harga="${m.harga}" data-plat="${m.plat}">📱 BOOKING VIA WHATSAPP</button>`;
+    slidesContainer.innerHTML+=`<div class="slide"><div class="slide-img"><img src="${foto}"></div><div class="slide-info"><div><h3>${namaMotor}</h3><span class="plat">${m.plat||'-'}</span> ${getStatus(m.status)}<div class="detail-grid"><span>Tahun</span><span>${m.tahun||'-'}</span><span>Warna</span><span>${m.warna||'-'}</span><span>CC</span><span>${m.cc||'-'} CC</span><span>Penumpang</span><span>${m.penumpang||'-'} Orang</span></div></div><div><div class="harga-box"><div>HARGA SEWA / HARI</div><div class="value">Rp ${harga}</div></div>${btnBookingHtml}</div></div></div>`;
+    dotsContainer.innerHTML+=`<span class="dot" onclick="currentSlide(${i+1})"></span>`;
+  });
+  showSlides(slideIndex);
+}
+function renderKatalog(){
+  let container=document.getElementById('katalogContainer');
+  if(dataMobil.length==0){container.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#d4af37;">Belum ada data</div>';return;}
+  container.innerHTML='';
+  dataMobil.forEach(m=>{
+    let foto=m.foto||'https://placehold.co/300x160/0a1629/d4af37?text=No+Foto';
+    let harga=parseInt(m.harga||0).toLocaleString('id-ID');
+    let isKeluar=String(m.status||'ADA').toUpperCase()==='KELUAR';
+    let btnKatalog=isKeluar?`<div style="background:#6b7280;color:#fff;padding:10px;text-align:center;font-size:12px">⛔ TIDAK TERSEDIA</div>`:`<button class="btn-wa btnBooking" data-nama="${m.merk||''} ${m.type||''}" data-harga="${m.harga}" data-plat="${m.plat}" style="width:100%;padding:10px;font-size:12px">📱 BOOKING</button>`;
+    container.innerHTML+=`<div class="katalog-card"><img src="${foto}"><div class="katalog-info"><h4>${m.merk||''} ${m.type||''}</h4><div style="font-size:12px;color:#666;">No Pol: ${m.plat||'-'} | ${m.tahun||''}</div><div class="harga">Rp ${harga}/Hari</div>${getStatus(m.status)}</div>${btnKatalog}</div>`;
+  });
+}
+db.collection("armada_mobil").onSnapshot((snap)=>{dataMobil=[]; snap.forEach(d=> dataMobil.push({id:d.id, ...d.data()})); dataMobil=dataMobil.map(norm); renderAll();});
+db.collection("transaksi").onSnapshot((snap)=>{dataTransaksi=[]; snap.forEach(d=> dataTransaksi.push({id:d.id, ...d.data()})); renderAll();});
+db.collection("users").onSnapshot((snap)=>{dataUser=[]; snap.forEach(d=> dataUser.push({id:d.id, ...d.data()})); renderAll();});
+function geserSlide(n){showSlides(slideIndex+=n)}; 
+function currentSlide(n){showSlides(slideIndex=n)};
+function showSlides(n){
+  let slides=document.querySelectorAll(".slide"); let dots=document.querySelectorAll(".dot"); 
+  if(!slides.length) return; if(n>slides.length){slideIndex=1} if(n<1){slideIndex=slides.length} 
+  let el=document.querySelector(".slides"); if(el) el.style.transform=`translateX(-${(slideIndex-1)*100}%)`; 
+  dots.forEach(d=>d.classList.remove("active")); if(dots[slideIndex-1]) dots[slideIndex-1].classList.add("active");
+}
+setInterval(()=>{geserSlide(1)},6000);
+async function buatBackup(){
+  document.getElementById('statusBackup').innerText = "⏳ Membuat backup...";
+  try{
+    let armadaSnap = await db.collection("armada_mobil").get();
+    let trxSnap = await db.collection("transaksi").get();
+    let userSnap = await db.collection("users").get();
+    let armada = []; armadaSnap.forEach(d=>armada.push({id:d.id, ...d.data()}));
+    let trx = []; trxSnap.forEach(d=>trx.push({id:d.id, ...d.data()}));
+    let users = []; userSnap.forEach(d=>users.push({id:d.id, ...d.data()}));
+    let backup = { tanggal: new Date().toLocaleString('id-ID'), timestamp: Date.now(), armada_mobil: armada, transaksi: trx, users: users, total_armada: armada.length, total_transaksi: trx.length, total_user: users.length };
+    backupTerakhir = backup;
+    await db.collection("backups").add(backup);
+    let listLocal = JSON.parse(localStorage.getItem("apama_backups")||"[]");
+    listLocal.unshift(backup);
+    localStorage.setItem("apama_backups", JSON.stringify(listLocal.slice(0,20)));
+    downloadJSON(backup, "backup-apama-" + new Date().toISOString().slice(0,10) + ".json");
+    document.getElementById('statusBackup').innerText = `✅ Backup berhasil! ${armada.length} motor | ${trx.length} transaksi | ${users.length} user - Tersimpan di Firestore + ter-download JSON beb!`;
+    loadBackupList();
+  }catch(e){ document.getElementById('statusBackup').innerText = "❌ Gagal backup: " + e.message; }
+}
+function downloadJSON(data, namaFile){
+  let blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = namaFile;
+  a.click();
+}
+function exportBackupJSON(){
+  if(!backupTerakhir){ let listLocal = JSON.parse(localStorage.getItem("apama_backups")||"[]"); if(listLocal.length>0) backupTerakhir = listLocal[0]; }
+  if(!backupTerakhir){ alert("Belum ada backup beb! Klik Backup Sekarang dulu."); return; }
+  downloadJSON(backupTerakhir, "backup-apama-terakhir.json");
+  document.getElementById('statusBackup').innerText = "⬇️ JSON backup terakhir sudah di-download beb!";
+}
+async function loadBackupList(){
+  document.getElementById('tabelBackup').style.display = "table";
+  let tbody = document.querySelector("#tabelBackup tbody");
+  tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>⏳ Memuat backup...</td></tr>";
+  try{
+    let snap = await db.collection("backups").orderBy("timestamp","desc").limit(10).get();
+    if(snap.empty){ tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:#ef4444;'>Belum ada backup di Firestore beb. Klik Backup Sekarang dulu.</td></tr>"; return; }
+    let html = "";
+    snap.forEach(doc=>{
+      let b = doc.data();
+      html += `<tr><td>${b.tanggal||'-'}</td><td>${b.total_armada||0}</td><td>${b.total_transaksi||0}</td><td>${b.total_user||0}</td><td><button class="btn-backup btn-biru" style="padding:5px 10px;" onclick="lihatDetailBackup('${doc.id}')">👀 Lihat</button> <button class="btn-backup btn-hijau" style="padding:5px 10px;" onclick="restoreBackup('${doc.id}')">♻️ Restore</button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+    document.getElementById('statusBackup').innerText = "✅ Ketemu " + snap.size + " backup di Firestore beb.";
+  }catch(e){ tbody.innerHTML = "<tr><td colspan='5'>❌ " + e.message + "</td></tr>"; }
+}
+async function lihatDetailBackup(id){
+  let doc = await db.collection("backups").doc(id).get();
+  let b = doc.data();
+  let el = document.getElementById('backupDetail');
+  el.style.display = "block";
+  el.innerText = "BACKUP TANGGAL: " + b.tanggal + "\n\nMOTOR (" + b.total_armada + "):\n" + b.armada_mobil.map(m=>"- " + (m.merk||'') + " " + (m.type||'') + " | Plat: " + (m.plat||'-') + " | " + (m.status||'')).join("\n") + "\n\nTRANSAKSI (" + b.total_transaksi + "):\n" + b.transaksi.slice(0,10).map(t=>"- " + JSON.stringify(t).slice(0,120)).join("\n") + "\n\nUSER (" + b.total_user + "):\n" + b.users.map(u=>"- " + u.username + " / " + u.nama + " (" + u.role + ")").join("\n");
+  el.scrollIntoView({behavior:'smooth'});
+}
+async function restoreBackup(id){
+  let doc = await db.collection("backups").doc(id).get();
+  let b = doc.data();
+  restoreYangDipilih = {tipe:'firestore', id:id, data:b};
+  bukaModalWarning(b, "Firestore");
+}
+async function siapkanRestoreFile(event){
+  let file = event.target.files[0];
+  if(!file) return;
+  let text = await file.text();
+  let b = JSON.parse(text);
+  restoreYangDipilih = {tipe:'file', data:b, namaFile:file.name};
+  bukaModalWarning(b, "File: " + file.name);
+  event.target.value = "";
+}
+function bukaModalWarning(b, sumber){
+  document.getElementById('isiWarningRestore').innerHTML = `
+    <b>📦 Backup:</b> ${sumber} | ${b.tanggal || '-'}<br>
+    Isi Backup: <b>${b.total_armada||0} Motor | ${b.total_transaksi||0} Transaksi | ${b.total_user||0} User</b><br>
+    <b>📊 Sekarang:</b> <b>${dataMobil.length} Motor | ${dataTransaksi.length} Transaksi | ${dataUser.length} User</b>
+  `;
+  document.getElementById('cekSetuju').checked = false;
+  document.getElementById('ketikRestore').value = "";
+  document.getElementById('pesanKetik').innerText = "";
+  document.getElementById('btnKonfirmasiRestore').disabled = true;
+  document.getElementById('modalRestore').style.display = "flex";
+}
+function cekTombolRestore(){
+  let cek = document.getElementById('cekSetuju').checked;
+  let ketik = document.getElementById('ketikRestore').value.trim().toUpperCase();
+  let btn = document.getElementById('btnKonfirmasiRestore');
+  if(!cek){ btn.disabled = true; document.getElementById('pesanKetik').innerText = "⚠️ Centang dulu beb!"; return; }
+  if(ketik !== "RESTORE"){ btn.disabled = true; document.getElementById('pesanKetik').innerText = "⚠️ Ketik RESTORE dulu beb!"; return; }
+  btn.disabled = false;
+  document.getElementById('pesanKetik').innerText = "✅ Siap! Boleh klik YA, RESTORE beb.";
+  document.getElementById('pesanKetik').style.color = "#16a34a";
+}
+function tutupModalRestore(){
+  document.getElementById('modalRestore').style.display = "none";
+  restoreYangDipilih = null;
+  document.getElementById('statusBackup').innerText = "❌ Restore dibatalkan beb, data tidak berubah, aman!";
+}
+async function jalankanRestore(){
+  if(!restoreYangDipilih) return;
+  let b = restoreYangDipilih.data;
+  document.getElementById('modalRestore').style.display = "none";
+  document.getElementById('statusBackup').innerText = "⏳ Restore berjalan... cek satu-satu biar gak double beb...";
+  try{
+    let ditambah = 0, dilewati = 0;
+    for(let m of (b.armada_mobil||[])){
+      let sudahAda = await db.collection("armada_mobil").doc(m.id).get();
+      if(sudahAda.exists){ dilewati++; continue; }
+      let cekPlat = await db.collection("armada_mobil").where("plat","==", m.plat).get();
+      if(!cekPlat.empty){ dilewati++; continue; }
+      await db.collection("armada_mobil").doc(m.id).set(m);
+      ditambah++;
+    }
+    for(let t of (b.transaksi||[])){
+      let sudahAda = await db.collection("transaksi").doc(t.id).get();
+      if(sudahAda.exists){ dilewati++; continue; }
+      await db.collection("transaksi").doc(t.id).set(t);
+      ditambah++;
+    }
+    for(let u of (b.users||[])){
+      let sudahAda = await db.collection("users").doc(u.id).get();
+      if(sudahAda.exists){ dilewati++; continue; }
+      let cekUser = await db.collection("users").where("username","==", u.username).get();
+      if(!cekUser.empty){ dilewati++; continue; }
+      await db.collection("users").doc(u.id).set(u);
+      ditambah++;
+    }
+    document.getElementById('statusBackup').innerText = `✅ Restore selesai beb! Ditambah: ${ditambah} | Dilewati (udah ada / data baru): ${dilewati}`;
+    alert("✅ Restore selesai beb!\n\nDitambah (yang hilang): " + ditambah + " data\nDilewati (udah ada / data baru): " + dilewati + " data\n\nData baru Bapak aman, gak ketimpa, gak double!");
+    loadBackupList();
+  }catch(e){ alert("❌ Gagal restore: " + e.message); }
+}
+async function updateGroupList(){ try{ let res = await fetch(URL_FETCH_GROUP, {method:"POST", headers:{Authorization: WA_TOKEN}}); return true; }catch(e){ return false; } }
+async function getGroupIdRentalApama(){
+  try{
+    let res = await fetch(URL_GET_GROUP, {method:"POST", headers:{Authorization: WA_TOKEN}});
+    let data = await res.json();
+    if(data && data.data && data.data.length>0){
+      let found = data.data.find(g => { let name = (g.subject || g.name || "").toLowerCase(); return name.includes("apama") || name.includes("rental"); });
+      if(found){ GROUP_ID_RENTAL_APAMA = found.id || found.jid || found.group_id; GROUP_NAME = found.subject || found.name || "Rental Apama"; localStorage.setItem("rental_apama_group_id", GROUP_ID_RENTAL_APAMA); localStorage.setItem("rental_apama_group_name", GROUP_NAME); return GROUP_ID_RENTAL_APAMA; }
+    }
+  }catch(e){}
+  return null;
+}
+document.addEventListener('click', async function(e){
+  if(e.target&&e.target.classList.contains('btnBooking')){
+    if(e.target.disabled) return; e.preventDefault();
+    const btn=e.target; const namaMotor=btn.getAttribute('data-nama'); const harga=btn.getAttribute('data-harga'); const plat=btn.getAttribute('data-plat');
+    const tgl=prompt(`Booking ${namaMotor}\nPlat: ${plat}\nMau sewa tanggal berapa?`); if(!tgl) return;
+    const pesan=`🔔 BOOKING BARU MASUK!\n\nMotor: ${namaMotor}\nPlat: ${plat}\nHarga: Rp${Number(harga).toLocaleString('id-ID')}/hari\nTanggal Sewa: ${tgl}\nSumber: APAMA RENTAL\nGroup: Rental Apama HZ8HAZkVT2sChPO7j5jjq2`;
+    try{
+      let fd1=new FormData(); fd1.append("target", NOMOR_WA_ADMIN); fd1.append("message", pesan);
+      await fetch(URL_SEND, {method:"POST", headers:{Authorization: WA_TOKEN}, body: fd1});
+      if(!GROUP_ID_RENTAL_APAMA){ await updateGroupList(); await new Promise(r=>setTimeout(r,2000)); await getGroupIdRentalApama(); }
+      if(GROUP_ID_RENTAL_APAMA){ let fd2=new FormData(); fd2.append("target", GROUP_ID_RENTAL_APAMA); fd2.append("message", pesan); let r2 = await fetch(URL_SEND, {method:"POST", headers:{Authorization: WA_TOKEN}, body: fd2}); let j2 = await r2.json(); if(j2.status){ alert("✅ Booking masuk HP + Group "+GROUP_NAME+" beb!"); } else { alert("✅ HP masuk, Group gagal: "+j2.reason); } }
+      else { alert("✅ Booking masuk HP beb!"); }
+    }catch(err){ alert("❌ Error: "+err.message); }
+  }
+});
+setTimeout(async ()=>{ if(!GROUP_ID_RENTAL_APAMA){ await getGroupIdRentalApama(); } }, 3000);
+</script>
+</body>
+</html>

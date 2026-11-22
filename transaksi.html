@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TRANSAKSI PENYEWAAN</title>
+<style>
+body { font-family: 'Segoe UI', Arial; background: #0a1629; margin: 0; padding: 8px; color: #333; zoom: 0.9; }
+h2 { text-align: center; color: #d4af37; font-size: 18px; margin: 2px 0 8px 0; font-weight: bold; }
+.box { background: white; border: 2px solid #d4af37; border-radius: 8px; padding: 10px; max-width: 1600px; margin: auto; }
+.form-grid { display: grid; grid-template-columns: 100px 1fr; gap: 5px 8px; align-items: center; font-size: 11px; }
+.form-grid label { font-weight: 500; text-align: right; }
+.form-grid input, .form-grid select { padding: 4px 6px; border: 1px solid #aaa; border-radius: 4px; width: 100%; box-sizing: border-box; height: 26px; }
+.form-grid input:disabled, .form-grid select:disabled { background: #e9ecef; cursor: not-allowed; }
+.radio-group { display: flex; gap: 15px; grid-column: 2/3; font-size: 11px; }
+.btn-simpan { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; width: 100%; }
+.btn-batal { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; width: 100%; margin-top: 5px; }
+.btn-setup { background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+.total-box { background: #d4af37; color: #000; padding: 8px; border-radius: 4px; text-align: center; font-size: 13px; font-weight: bold; grid-column: 2/3; }
+.info-piutang { background: #fff3cd; border: 1px solid #ffc107; padding: 5px; border-radius: 4px; font-size: 11px; grid-column: 2/3; color: #856404; font-weight: bold; }
+.info-box { background: #e8f4ff; padding: 4px 6px; border-radius: 4px; font-size: 11px; grid-column: 2/3; }
+.info-lock { background: #ffeeba; border: 1px solid #ffc107; padding: 3px 6px; border-radius: 4px; font-size: 10px; color: #856404; grid-column: 2/3; margin-top: 2px; }
+.tabel-transaksi { width: 100%; border-collapse: collapse; font-size: 15px; }
+.tabel-transaksi th { background: hsl(123, 94%, 49%); color: #000; padding: 7px 4px; text-align: center; font-size: 15px; font-weight: bold; position: sticky; top: 0; }
+.tabel-transaksi td { border: 1px solid #ddd; padding: 7px 3px; text-align: center; height: 35px; font-size: 14px; }
+.tabel-transaksi tr:nth-child(even) { background: #f9f9f9; }
+.tabel-transaksi tr:hover { background: #fff3cd; }
+.badge-kredit { background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+.badge-reguler { background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+.badge-lunas { background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+.badge-belum { background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+.badge-selesai { background: #6c757d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+td.aksi-cell { white-space: nowrap; }
+.aksi-wrap { display: flex; gap: 3px; justify-content: center; align-items: center; flex-wrap: nowrap; }
+.btn-aksi { padding: 4px 6px; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; margin: 0; font-weight: bold; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.btn-edit { background: #ffc107; color: #000; font-size: 13px; }
+.btn-hapus { background: #dc3545; color: #fff; font-size: 12px; }
+.btn-cetak { background: #007bff; color: #fff; }
+.btn-kembali { background: #28a745; color: #fff; }
+.alert { background: #ffdddd; border: 1px solid red; padding: 8px; border-radius: 4px; margin-bottom: 8px; font-size: 11px; }
+.preview-bukti { max-width: 100%; max-height: 50px; margin-top: 3px; border: 1px solid #ddd; border-radius: 4px; }
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); }
+.modal-content { background: #e8f5c8; margin: 3% auto; padding: 15px; border-radius: 8px; width: 75%; max-width: 900px; border: 2px solid #d4af37; }
+.close { float: right; font-size: 24px; font-weight: bold; cursor: pointer; }
+.form-customer { display: grid; grid-template-columns: 120px 1fr 120px 1fr; gap: 8px 12px; align-items: center; font-size: 12px; }
+.form-customer label { text-align: right; }
+.btn-simpan-cus { background: #007bff; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; grid-column: 1/5; }
+.judul-alamat { grid-column: 1/5; background: #d4af37; color: #000; padding: 5px; text-align: center; font-weight: bold; border-radius: 4px; margin: 5px 0; }
+</style>
+</head>
+<body>
+<h2>TRANSAKSI PENYEWAAN</h2>
+<div class="box">
+<div id="alertMobil" class="alert" style="display:none;"></div>
+<p id="statusFirebase" style="font-size:12px;text-align:center;font-weight:bold;">⏳ Menghubungkan ke Firebase rental2026...</p>
+<div style="display:grid; grid-template-columns: 350px 1fr; gap:15px;">
+<div>
+<form id="formTransaksi" class="form-grid">
+<label>No. Invoice :</label><div style="display:flex; gap:5px;"><input type="text" id="no_invoice" readonly><button type="button" class="btn-setup" onclick="bukaSetup()">Setup</button></div>
+<label>Jenis Customer :</label><div class="radio-group"><label><input type="radio" name="jenis_cus" value="kredit" checked> Kredit</label><label><input type="radio" name="jenis_cus" value="reguler"> Reguler</label></div>
+<label>Customer :</label><div><select id="id_customer" required><option value="">- Pilih Customer -</option></select><div id="info_customer" class="info-box"></div></div>
+<label>Mobil :</label><div><select id="id_mobil" required><option value="">- Pilih Mobil -</option></select></div>
+<label>Tgl Sewa :</label><input type="date" id="tgl_sewa" required onchange="hitungOtomatis()">
+<label>Jam Keluar :</label><input type="time" id="jam_keluar" value="08:00" onchange="hitungOtomatis()">
+<label>Tgl Kembali :</label><input type="date" id="tgl_kembali" onchange="hitungOtomatis()">
+<label>Jam Kembali :</label><input type="time" id="jam_kembali" value="18:00" onchange="hitungOtomatis()">
+<label>Standar Sewa :</label><input type="number" id="standar_sewa" value="10" placeholder="Jam" readonly>
+<label>KM Keluar :</label><input type="number" id="km_keluar" placeholder="0" required>
+<label>KM Masuk :</label><input type="number" id="km_masuk" placeholder="0">
+<label>Harga/Hari :</label><input type="number" id="harga" placeholder="Harga dari master" onchange="hitungOtomatis()">
+<label>Jumlah Hari :</label><input type="text" id="jumlah_hari" readonly>
+<label>Overtime :</label><input type="text" id="overtime" readonly>
+<label>Jumlah Helm :</label><input type="number" id="jumlah_helm" placeholder="0" value="0" onchange="hitungOtomatis()">
+<label>Deposit :</label><input type="number" id="deposit" placeholder="0" value="0" onchange="hitungOtomatis()">
+<label>Upload Bukti :</label><input type="file" id="bukti_tf" accept="image/*">
+<div id="preview_bukti" style="grid-column:2/3;"></div>
+<label></label><div class="total-box">TOTAL: Rp <span id="total_bayar">0</span></div>
+<div id="info_piutang" class="info-piutang" style="display:none;">SISA PIUTANG: Rp <span id="sisa_piutang">0</span></div>
+<div style="grid-column:2/3;"><button type="submit" id="btnSimpan" class="btn-simpan">SIMPAN TRANSAKSI</button><button type="button" id="btnBatal" class="btn-batal" onclick="batalEdit()">BATAL</button></div>
+</form>
+</div>
+<div>
+<h3 style="text-align:center; margin-top:0; color:#d4af37; font-size:14px;">DATA TRANSAKSI SEWA</h3>
+<button style="background:#d4af37; color:#000; padding:6px 12px; border:none; border-radius:4px; cursor:pointer; margin-bottom:8px; font-weight:bold; font-size:11px;" onclick="window.location='laporan.html'">📊 MENU LAPORAN</button>
+<div style="overflow-x:auto; max-height: 520px;">
+<table class="tabel-transaksi"><thead><tr><th>No</th><th>Invoice</th><th>Customer</th><th>Jenis</th><th>Mobil</th><th>Sewa</th><th>Kembali</th><th>Total</th><th>Deposit</th><th>Piutang</th><th>Helm</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody id="tbodyTransaksi"><tr><td colspan="14">Belum ada data transaksi</td></tr></tbody></table>
+</div>
+</div>
+</div>
+</div>
+
+<div id="modalCustReguler" class="modal"><div class="modal-content"><span class="close" onclick="closeModalCustReguler()">&times;</span><h3>FORM CUSTOMER REGULER</h3><form id="formCustReguler" class="form-customer"><label>No. KTP :</label><input type="text" id="reg_ktp" required><label>Nama Customer :</label><input type="text" id="reg_nama" required><label>No. HP / WA :</label><input type="text" id="reg_hp" required><label>No. SIM :</label><input type="text" id="reg_sim"><label>Email :</label><input type="email" id="reg_email"><label>Insurance :</label><input type="number" id="reg_insurance" value="1400000"><div class="judul-alamat">ALAMAT TETAP</div><label>Alamat :</label><textarea id="reg_alamat" rows="2" required style="grid-column:2/5;"></textarea><div class="judul-alamat">ALAMAT SEMENTARA</div><label>Nama Hotel :</label><input type="text" id="reg_hotel" placeholder="Nama Hotel"><label>No. Kamar :</label><input type="text" id="reg_room" placeholder="No. Kamar"><label>Pekerjaan :</label><input type="text" id="reg_pekerjaan"><label>Nationality :</label><input type="text" id="reg_nationality" placeholder="Indonesia"><label>Jenis Kelamin :</label><select id="reg_jk" required><option value="">- Pilih -</option><option>Laki-laki</option><option>Perempuan</option></select><div></div><div style="grid-column:1/5; text-align:center;"><button type="submit" class="btn-simpan-cus">Simpan</button></div></form></div></div>
+
+<div id="modalSetup" class="modal"><div class="modal-content" style="width:400px;"><span class="close" onclick="closeModalSetup()">&times;</span><h3>SETUP NOMOR INVOICE</h3><form id="formSetup" style="display:grid; gap:8px;"><label>Prefix :</label><input type="text" id="setup_prefix" value="AUTO"><label>Tahun :</label><input type="number" id="setup_tahun" value="2026"><label>Jumlah Digit :</label><input type="number" id="setup_digit" value="4"><label>Nomor Terakhir :</label><input type="number" id="setup_nomor" value="0"><div style="text-align:center; margin-top:10px;"><button type="submit" style="background:#28a745; color:white; padding:8px 20px; border:none; border-radius:4px; font-weight:bold;">SIMPAN SETUP</button></div></form></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const WA_TOKEN = "ISI_TOKEN_FONNTE_DI_HP_SENDIRI";
+const NOMOR_OWNER = "6282340152478";
+
+let dataCustomer = [];
+let dataCustomerReguler = [];
+let dataMobil = [];
+let dataTransaksi = [];
+let setupInvoice = { prefix: "AUTO", tahun: new Date().getFullYear(), digit: 4, nomor_terakhir: 0 };
+let idEdit = null;
+let buktiBase64 = '';
+
+onSnapshot(collection(db, "customer"), s => { dataCustomer = s.docs.map(d=>({id:d.id, ...d.data()})); loadDropdownKredit(); loadTabelTransaksi(); updateStatus(); });
+onSnapshot(collection(db, "customer_reguler"), s => { dataCustomerReguler = s.docs.map(d=>({id:d.id, ...d.data()})); loadTabelTransaksi(); });
+onSnapshot(collection(db, "armada_mobil"), s => { dataMobil = s.docs.map(d=>({id:d.id, ...d.data()})); loadDropdownMobil(); loadTabelTransaksi(); updateStatus(); });
+onSnapshot(collection(db, "transaksi"), s => { dataTransaksi = s.docs.map(d=>({id:d.id, ...d.data()})); loadTabelTransaksi(); updateStatus(); });
+onSnapshot(doc(db, "setup", "invoice"), async s => { if(s.exists()){ setupInvoice = s.data(); } else { await setDoc(doc(db, "setup", "invoice"), setupInvoice); } generateInvoice(); });
+function updateStatus(){ document.getElementById('statusFirebase').innerText = '✅ FIREBASE rental2026 TERHUBUNG - Transaksi: ' + dataTransaksi.length + ' | Mobil: ' + dataMobil.length + ' | Customer: ' + dataCustomer.length; document.getElementById('statusFirebase').style.color = 'green'; }
+
+// ===== FIX BEB - hitungOtomatis harus di window karena script type="module" =====
+// Kalau tidak pakai window, onchange="hitungOtomatis()" di HTML akan error & Jumlah Hari tidak pernah keisi.
+window.hitungOtomatis = function(){ window.hitungTotal(); };
+
+async function kirimWAOwnerSilent(pesan){
+  try{
+    let fd = new FormData();
+    fd.append("target", NOMOR_OWNER);
+    fd.append("message", pesan);
+    fetch("https://api.fonnte.com/send", { method: "POST", headers: { "Authorization": WA_TOKEN }, body: fd, mode: "no-cors" }).catch(()=>{});
+  }catch(e){ console.log("WA silent skip:", e.message); }
+}
+
+document.getElementById('bukti_tf').addEventListener('change', function(e){
+  let file = e.target.files[0];
+  if(file){ let reader = new FileReader(); reader.onload = function(evt){
+    let img = new Image(); img.onload = function(){ let canvas=document.createElement('canvas'); let scale=Math.min(1,800/img.width); canvas.width=img.width*scale; canvas.height=img.height*scale; canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height); buktiBase64=canvas.toDataURL('image/jpeg',0.7); document.getElementById('preview_bukti').innerHTML=`<img src="${buktiBase64}" class="preview-bukti">`; }; img.src=evt.target.result;
+  }; reader.readAsDataURL(file); }
+});
+
+function loadTabelTransaksi(){
+  let tbody = document.getElementById('tbodyTransaksi');
+  if(dataTransaksi.length == 0){ tbody.innerHTML = '<tr><td colspan="14">Belum ada data transaksi</td></tr>'; return; }
+  tbody.innerHTML = '';
+  [...dataTransaksi].reverse().forEach((t, i) => {
+    let cus = dataCustomer.find(c => c.id == t.id_customer) || dataCustomerReguler.find(c => c.id == t.id_customer);
+    let mob = dataMobil.find(m => m.id == t.id_mobil);
+    let badge = t.tipe_customer == 'reguler' ? '<span class="badge-reguler">REGULER</span>' : '<span class="badge-kredit">KREDIT</span>';
+    let statusBadge = t.status == 'Selesai' ? '<span class="badge-selesai">SELESAI</span>' : t.status_bayar == 'Lunas' ? '<span class="badge-lunas">LUNAS</span>' : '<span class="badge-belum">BELUM</span>';
+    let piutang = (parseInt(t.total_bayar||0) - parseInt(t.deposit || 0));
+    let bukti = t.bukti_tf ? `<a href="${t.bukti_tf}" target="_blank"><img src="${t.bukti_tf}" style="width:30px; height:30px; object-fit:cover; border-radius:3px;"></a>` : '-';
+    let btnKembali = t.status == 'Sewa' ? `<button class="btn-aksi btn-kembali" data-id="${t.id}" data-act="kembali">KEMBALI</button>` : '';
+    tbody.innerHTML += `<tr><td>${i + 1}</td><td>${t.no_invoice||''}</td><td>${cus?.nama_customer || '-'}</td><td>${badge}</td><td>${mob?.plat || '-'}</td><td>${t.tgl_sewa||''}</td><td>${t.tgl_kembali||''}</td><td>Rp ${parseInt(t.total_bayar||0).toLocaleString('id-ID')}</td><td>Rp ${parseInt(t.deposit || 0).toLocaleString('id-ID')}</td><td>Rp ${piutang.toLocaleString('id-ID')}</td><td>${t.jumlah_helm || 0}</td><td>${statusBadge}</td><td>${bukti}</td><td class="aksi-cell"><div class="aksi-wrap">${btnKembali}<button class="btn-aksi btn-edit" data-id="${t.id}" data-act="edit" title="Edit">✏️</button><button class="btn-aksi btn-hapus" data-id="${t.id}" data-act="hapus" title="Hapus">❌</button><button class="btn-aksi btn-cetak" data-id="${t.id}" data-act="cetak">Cetak</button></div></td></tr>`;
+  });
+  tbody.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('click', ()=>{ let id=btn.dataset.id; if(btn.dataset.act=='kembali') kembalikanMobil(id); if(btn.dataset.act=='edit') editTransaksi(id); if(btn.dataset.act=='hapus') hapusTransaksi(id); if(btn.dataset.act=='cetak') cetakInvoice(id); }); });
+}
+window.kembalikanMobil = async function(id){
+  if(confirm('Yakin mobil ini sudah dikembalikan? Status akan jadi ADA')){
+    let t = dataTransaksi.find(x => x.id == id); if(!t) return;
+    try{ await updateDoc(doc(db, "transaksi", id), { status: 'Selesai', tgl_kembali_aktual: new Date().toISOString().split('T')[0] }); }catch(e){ alert('❌ Gagal kembali beb: '+e.message); return; }
+    try{ if(t.id_mobil) await updateDoc(doc(db, "armada_mobil", t.id_mobil), { status_mobil: 'Ada' }); }catch(e){ console.log('Mobil gagal balik beb:', e.message); }
+    alert('✅ Mobil sudah dikembalikan. Status ADA');
+  }
+};
+function loadDropdownMobil(){
+  let selMob = document.getElementById('id_mobil');
+  let alertBox = document.getElementById('alertMobil');
+  let valLama = selMob.value;
+  selMob.innerHTML = '<option value="">- Pilih Mobil -</option>';
+  if(dataMobil.length == 0){ alertBox.style.display = 'block'; alertBox.innerHTML = '⚠️ DATA MOBIL KOSONG! Cek mobil.html / Firebase!'; return; } else { alertBox.style.display = 'none'; }
+  dataMobil.forEach(m => {
+    let status = (m.status_mobil || 'Ada').trim();
+    let harga = parseInt(m.harga || 0).toLocaleString('id-ID');
+    if(status == 'Ada' || m.id == idEdit){ selMob.innerHTML += `<option value="${m.id}">${m.plat} | ${m.merk} | Rp ${harga}</option>`; }
+  });
+  if(valLama) selMob.value = valLama;
+  if(idEdit){ selMob.disabled = true; if(!document.getElementById('info_lock_mobil')){ let info=document.createElement('div'); info.id='info_lock_mobil'; info.className='info-lock'; info.innerHTML='🔒 Mobil tidak bisa diganti saat edit'; selMob.parentNode.appendChild(info); } }
+  else { selMob.disabled = false; let info=document.getElementById('info_lock_mobil'); if(info) info.remove(); }
+}
+document.querySelectorAll('input[name="jenis_cus"]').forEach(radio => {
+  radio.addEventListener('change', function(){
+    if(this.value == 'reguler'){ document.getElementById('modalCustReguler').style.display = 'block'; id_customer.required = false; id_customer.innerHTML = '<option value="">- Isi Form Reguler Dulu -</option>'; info_piutang.style.display = 'none'; }
+    else { loadDropdownKredit(); id_customer.required = true; }
+  });
+});
+window.closeModalCustReguler = function(){ document.getElementById('modalCustReguler').style.display = 'none'; document.querySelector('input[name="jenis_cus"][value="kredit"]').checked = true; loadDropdownKredit(); }
+document.getElementById('formCustReguler').addEventListener('submit', async function(e){
+  e.preventDefault();
+  let cusBaru = { no_ktp: reg_ktp.value, nama_customer: reg_nama.value, no_hp: reg_hp.value, no_sim: reg_sim.value, insurance: reg_insurance.value, email: reg_email.value, alamat: reg_alamat.value, hotel: reg_hotel.value, room_no: reg_room.value, pekerjaan: reg_pekerjaan.value, nationality: reg_nationality.value, jenis_kelamin: reg_jk.value, status_customer: 'Aktif' };
+  let ref = await addDoc(collection(db, "customer_reguler"), cusBaru);
+  id_customer.innerHTML = `<option value="${ref.id}">${cusBaru.nama_customer}</option>`; id_customer.value = ref.id;
+  info_customer.innerHTML = `HP: ${cusBaru.no_hp} | SIM: ${cusBaru.no_sim} | Ins: Rp ${parseInt(cusBaru.insurance).toLocaleString('id-ID')} <span class="badge-reguler">REGULER</span>`;
+  alert('✅ Data Customer Reguler Tersimpan'); this.reset(); closeModalCustReguler();
+});
+function loadDropdownKredit(){
+  let sel = document.getElementById('id_customer'); let valLama = sel.value;
+  sel.innerHTML = '<option value="">- Pilih Customer Kredit -</option>';
+  dataCustomer.forEach(c => { if(c.status_customer == 'Aktif') sel.innerHTML += `<option value="${c.id}">${c.nama_customer}</option>`; });
+  if(valLama) sel.value = valLama;
+}
+function generateInvoice(){
+  let nomorBaru = (setupInvoice.nomor_terakhir||0) + 1;
+  let nomorFormat = String(nomorBaru).padStart(setupInvoice.digit||4, '0');
+  document.getElementById('no_invoice').value = `${setupInvoice.prefix}/${setupInvoice.tahun}/${nomorFormat}`;
+}
+window.bukaSetup = function(){
+  document.getElementById('modalSetup').style.display = 'block';
+  setup_prefix.value = setupInvoice.prefix; setup_tahun.value = setupInvoice.tahun; setup_digit.value = setupInvoice.digit; setup_nomor.value = setupInvoice.nomor_terakhir;
+}
+window.closeModalSetup = function(){ document.getElementById('modalSetup').style.display = 'none'; }
+document.getElementById('formSetup').addEventListener('submit', async function(e){
+  e.preventDefault();
+  setupInvoice = { prefix: setup_prefix.value, tahun: parseInt(setup_tahun.value), digit: parseInt(setup_digit.value), nomor_terakhir: parseInt(setup_nomor.value) };
+  await setDoc(doc(db, "setup", "invoice"), setupInvoice);
+  alert('✅ Setup tersimpan ke Firebase!'); closeModalSetup(); generateInvoice();
+});
+id_customer.addEventListener('change', function(){
+  let c = dataCustomer.find(x => x.id == this.value) || dataCustomerReguler.find(x => x.id == this.value);
+  if(c){ let alamat = c.hotel ? `${c.hotel} Rm.${c.room_no}` : c.alamat; info_customer.innerHTML = `HP: ${c.no_hp} | ${alamat}`; }
+});
+id_mobil.addEventListener('change', function(){ let m = dataMobil.find(x => x.id == this.value); if(m){ harga.value = m.harga || 0; window.hitungTotal(); } });
+harga.addEventListener('input', function(){ window.hitungTotal(); });
+// ===== FIX TAMBAHAN BEB - pasang listener juga biar gak cuma ngandelin onchange =====
+['tgl_sewa','tgl_kembali','jam_keluar','jam_kembali','deposit','jumlah_helm'].forEach(function(id){
+  let el = document.getElementById(id);
+  if(el){ el.addEventListener('change', function(){ window.hitungTotal(); }); el.addEventListener('input', function(){ window.hitungTotal(); }); }
+});
+
+// ===== FIX UTAMA BEB - HITUNG JUMLAH HARI + TOTAL =====
+// Logika baru: hari = full 24 jam. Sisa jam di bawah 24 jam masuk Overtime, bukan jadi hari baru.
+// Contoh SS Bapak: 14/11 08:00 -> 21/11 18:00 = 178 jam = 7 hari + 10 jam overtime.
+// Standar Sewa TIDAK ditimpa lagi, tetap 10 beb.
+window.hitungTotal = function(){
+  let elTglSewa = document.getElementById('tgl_sewa');
+  let elTglKembali = document.getElementById('tgl_kembali');
+  let elJamKeluar = document.getElementById('jam_keluar');
+  let elJamKembali = document.getElementById('jam_kembali');
+  let elHarga = document.getElementById('harga');
+  let elDeposit = document.getElementById('deposit');
+  if(!elTglSewa || !elTglKembali) return;
+  let tgl1 = new Date(elTglSewa.value + 'T' + (elJamKeluar ? elJamKeluar.value || '08:00' : '08:00'));
+  let tgl2 = new Date(elTglKembali.value + 'T' + (elJamKembali ? elJamKembali.value || '18:00' : '18:00'));
+  let hargaVal = parseInt(elHarga ? elHarga.value : 0) || 0;
+  let depositVal = parseInt(elDeposit ? elDeposit.value : 0) || 0;
+  if(elTglSewa.value && elTglKembali.value && !isNaN(tgl1) && !isNaN(tgl2) && tgl2 >= tgl1){
+    let selisihMs = tgl2 - tgl1;
+    let selisihJam = selisihMs / (1000 * 60 * 60);
+    let hari = Math.floor(selisihJam / 24);
+    if(hari == 0) hari = 1;
+    // Sisa jam setelah hari penuh = overtime. Kalau pas 24 jam kelipatan, overtime 0.
+    let overtime = 0;
+    if(selisihJam >= 24){
+      overtime = Math.round(selisihJam - (hari * 24));
+    } else {
+      overtime = 0;
+    }
+    if(overtime < 0) overtime = 0;
+    let totalSewa = hari * hargaVal;
+    let totalOT = overtime * (hargaVal * 0.1);
+    let total = totalSewa + totalOT;
+    let sisa = total - depositVal; if(sisa < 0) sisa = 0;
+    document.getElementById('overtime').value = overtime > 0 ? overtime + ' Jam' : '0 Jam';
+    document.getElementById('total_bayar').innerText = total.toLocaleString('id-ID');
+    document.getElementById('sisa_piutang').innerText = sisa.toLocaleString('id-ID');
+    document.getElementById('jumlah_hari').value = hari;
+    // JANGAN timpa standar_sewa beb, biarkan tetap 10
+  } else {
+    // Kalau tanggal belum lengkap, jangan hapus jumlah hari yang sudah ada beb, cuma reset total
+    if(!elTglSewa.value || !elTglKembali.value){
+      document.getElementById('overtime').value = '';
+      document.getElementById('total_bayar').innerText = '0';
+      document.getElementById('sisa_piutang').innerText = '0';
+    }
+  }
+  if(document.querySelector('input[name="jenis_cus"]:checked').value == 'kredit'){ info_piutang.style.display = 'block'; } else { info_piutang.style.display = 'none'; }
+}
+window.editTransaksi = function(id){
+  idEdit = id; let t = dataTransaksi.find(x => x.id == id); if(!t) return;
+  document.querySelectorAll('input[name="jenis_cus"]').forEach(r => r.disabled = true);
+  no_invoice.value = t.no_invoice;
+  document.querySelector(`input[name="jenis_cus"][value="${t.tipe_customer}"]`).checked = true;
+  if(t.tipe_customer == 'kredit') loadDropdownKredit(); else id_customer.innerHTML = `<option value="${t.id_customer}">${(dataCustomerReguler.find(c => c.id == t.id_customer)?.nama_customer) || 'Reguler'}</option>`;
+  loadDropdownMobil();
+  setTimeout(() => { id_customer.value = t.id_customer; id_mobil.value = t.id_mobil; id_customer.disabled = true; if(!document.getElementById('info_lock_cus')){ let info=document.createElement('div'); info.id='info_lock_cus'; info.className='info-lock'; info.innerHTML='🔒 Customer tidak bisa diganti saat edit'; id_customer.parentNode.appendChild(info); } }, 100);
+  tgl_sewa.value = t.tgl_sewa; jam_keluar.value = t.jam_keluar || '08:00'; tgl_kembali.value = t.tgl_kembali; jam_kembali.value = t.jam_kembali || '18:00'; standar_sewa.value = t.standar_sewa || 10; km_keluar.value = t.km_keluar; km_masuk.value = t.km_masuk; harga.value = t.harga; deposit.value = t.deposit || 0; jumlah_helm.value = t.jumlah_helm || 0; if(t.bukti_tf){ buktiBase64 = t.bukti_tf; preview_bukti.innerHTML = `<img src="${t.bukti_tf}" class="preview-bukti">`; }
+  window.hitungTotal(); btnSimpan.innerHTML = 'UPDATE TRANSAKSI'; btnSimpan.style.background = '#007bff'; btnBatal.style.display = 'inline-block'; window.scrollTo(0, 0);
+};
+window.batalEdit = function(){
+  idEdit = null; document.getElementById('formTransaksi').reset(); buktiBase64 = ''; preview_bukti.innerHTML = '';
+  btnSimpan.innerHTML = 'SIMPAN TRANSAKSI'; btnSimpan.style.background = '#28a745'; btnBatal.style.display = 'none'; jumlah_helm.value = 0;
+  document.querySelectorAll('input[name="jenis_cus"]').forEach(r => r.disabled = false); id_customer.disabled = false; id_mobil.disabled = false;
+  let info = document.getElementById('info_lock_cus'); if(info) info.remove();
+  document.querySelector('input[name="jenis_cus"][value="kredit"]').checked = true; loadDropdownKredit(); loadDropdownMobil(); generateInvoice();
+};
+
+// ==== HAPUS FIX BEB - 100% JALAN BEB! ====
+window.hapusTransaksi = async function(id){
+  let t = dataTransaksi.find(x => x.id == id);
+  if(!t){ alert('❌ Data gak ketemu beb! Refresh dulu beb!'); return; }
+  let cus = dataCustomer.find(c => c.id == t.id_customer) || dataCustomerReguler.find(c => c.id == t.id_customer);
+  let mob = dataMobil.find(m => m.id == t.id_mobil);
+  let namaCus = cus?.nama_customer || t.id_customer || '-';
+  let platMob = mob?.plat || t.id_mobil || '-';
+  let totalRp = parseInt(t.total_bayar||0).toLocaleString('id-ID');
+
+  if(!confirm('Yakin mau hapus?\n\nInvoice: '+t.no_invoice+'\nCustomer: '+namaCus+'\nMobil: '+platMob+'\nTotal: Rp '+totalRp+'\n\nHapus akan masuk ke hapus.html beb!')) return;
+
+  let waktu = new Date().toLocaleString('id-ID');
+  let admin = "Admin";
+
+  // 1. WA OWNER - JALAN DI BELAKANG, GAK BIKIN MACET BEB!
+  let pesanWA = `⚠️ *HAPUS TRANSAKSI*\nWaktu: ${waktu}\nInvoice: ${t.no_invoice}\nCustomer: ${namaCus}\nMobil: ${platMob}\nTotal: Rp ${totalRp}`;
+  kirimWAOwnerSilent(pesanWA);
+
+  // 2. SIMPAN LOG LENGKAP BEB - UNTUK PULIHKAN & CETAK DI hapus.html BEB!
+  let logData = {
+    waktu: waktu,
+    timestamp: Date.now(),
+    admin: admin,
+    jenis: 'invoice',
+    invoice: t.no_invoice || '',
+    customer: namaCus,
+    mobil: mob?.merk || '',
+    plat: platMob,
+    total: t.total_bayar || 0,
+    deposit: t.deposit || 0,
+    sisa_piutang: t.sisa_piutang || 0,
+    id_transaksi_asli: id,
+    target_collection: 'transaksi',
+    data_asli: t  // INI PENTING BEB! BIAR BISA PULIH FULL BEB!
+  };
+
+  try { await addDoc(collection(db, "log_hapus"), logData); } catch(e){ console.log('log_hapus gagal:', e.message); }
+  try { await addDoc(collection(db, "logHapus"), logData); } catch(e){ console.log('logHapus gagal:', e.message); }
+
+  // 3. BALIKIN MOBIL JADI ADA
+  try { if(t.id_mobil){ await updateDoc(doc(db, "armada_mobil", t.id_mobil), { status_mobil: 'Ada' }); } } catch(e){ console.log('Balikin mobil gagal:', e.message); }
+
+  // 4. HAPUS TRANSAKSI - INI YANG PENTING BEB, HARUS JALAN BEB!
+  try{
+    await deleteDoc(doc(db, "transaksi", id));
+    alert('✅ Berhasil dihapus beb! Invoice '+t.no_invoice+' masuk ke hapus.html beb! Cek tombol Pulihkan & Cetak beb!');
+  }catch(e){
+    alert('❌ GAGAL HAPUS beb: '+e.message+'\n\nCek Rules Firebase beb, harus allow delete beb!');
+  }
+};
+
+window.cetakInvoice = function(id){ let t = dataTransaksi.find(x => x.id == id); if(!t) return; window.open(`invoice.html?id=${t.id}`, '_blank'); };
+document.getElementById('formTransaksi').addEventListener('submit', async function(e){
+  e.preventDefault(); id_customer.disabled = false; id_mobil.disabled = false;
+  let jenis = document.querySelector('input[name="jenis_cus"]:checked').value;
+  let totalVal = parseInt(total_bayar.innerText.replace(/[^0-9]/g, '')) || 0;
+  let depositVal = parseInt(deposit.value) || 0;
+  let sisa = totalVal - depositVal;
+  let statusBayar = sisa <= 0 ? 'Lunas' : 'Belum Lunas';
+  let trx = { no_invoice: no_invoice.value, id_customer: id_customer.value, tipe_customer: jenis, id_mobil: id_mobil.value, tgl_sewa: tgl_sewa.value, jam_keluar: jam_keluar.value, tgl_kembali: tgl_kembali.value, jam_kembali: jam_kembali.value, standar_sewa: standar_sewa.value, km_keluar: km_keluar.value, km_masuk: km_masuk.value, jumlah_hari: jumlah_hari.value, overtime: overtime.value, harga: harga.value, jumlah_helm: parseInt(jumlah_helm.value) || 0, total_bayar: totalVal, deposit: depositVal, sisa_piutang: sisa, status_bayar: statusBayar, bukti_tf: buktiBase64, status: 'Sewa' };
+  try{
+    if(idEdit){ await updateDoc(doc(db, "transaksi", idEdit), trx); alert('✅ Transaksi berhasil diupdate ke Firebase!'); }
+    else { await addDoc(collection(db, "transaksi"), trx); setupInvoice.nomor_terakhir = (setupInvoice.nomor_terakhir||0) + 1; await setDoc(doc(db, "setup", "invoice"), setupInvoice); await updateDoc(doc(db, "armada_mobil", trx.id_mobil), { status_mobil: 'Keluar' }); alert('✅ Transaksi tersimpan ke Firebase! No: ' + trx.no_invoice); }
+    batalEdit();
+  }catch(err){ alert('❌ GAGAL: ' + err.message); }
+});
+</script>
+</body>
+</html>

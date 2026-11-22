@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+<title>Kompres Cepat Beb</title>
+<style>body{background:#0f172a;color:#fff;font-family:sans-serif;padding:20px;text-align:center}.box{background:#1e293b;padding:20px;border-radius:15px;border:2px solid gold}button{padding:12px;width:100%;background:gold;font-weight:bold;border-radius:10px;margin-top:10px}</style>
+</head>
+<body>
+<h3>📦 KOMPRES CEPAT 7 DETIK BEB</h3>
+<div class="box">
+<input type="file" id="f" accept="video/*">
+<button onclick="go()">POTONG & KECILKAN JADI 3MB BEB</button>
+<p id="info"></p>
+<video id="v" controls style="width:100%;display:none;margin-top:10px"></video>
+<a id="dl" style="display:none"><button style="background:#22c55e">DOWNLOAD HASIL BEB</button></a>
+</div>
+<script>
+async function go(){
+  const file=document.getElementById('f').files[0];
+  if(!file) return alert('pilih video dulu beb');
+  const info=document.getElementById('info'); info.innerText='Bentar beb...';
+  const vid=document.createElement('video');
+  vid.src=URL.createObjectURL(file); vid.muted=true;
+  await new Promise(r=>vid.onloadedmetadata=r);
+  vid.currentTime=0;
+  const canvas=document.createElement('canvas');
+  canvas.width=480; canvas.height=270;
+  const ctx=canvas.getContext('2d');
+  const stream=canvas.captureStream(25);
+  const rec=new MediaRecorder(stream,{videoBitsPerSecond:600000});
+  let chunks=[]; rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=()=>{
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const url=URL.createObjectURL(blob);
+    const v=document.getElementById('v'); v.src=url; v.style.display='block';
+    const dl=document.getElementById('dl'); dl.href=url; dl.download='rindik-7detik-beb.webm'; dl.style.display='block';
+    info.innerText=`SELESAI BEB! Dari ${(file.size/1024/1024).toFixed(1)}MB jadi ${(blob.size/1024/1024).toFixed(1)}MB`;
+  };
+  rec.start();
+  vid.play();
+  let t=setInterval(()=>{
+    if(vid.currentTime>7 || vid.ended){clearInterval(t); rec.stop(); vid.pause();}
+    ctx.drawImage(vid,0,0,480,270);
+  },40);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>INFORMASI ARMADA MOBIL & SEPEDA MOTOR - rental2026</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial;background:#0a1629;margin:0;padding:10px;color:#333}
+h2{text-align:center;color:#d4af37;margin:5px 0 10px 0;font-size:18px}
+.wrap{display:grid;grid-template-columns:500px 1fr;gap:12px;align-items:start}
+.box-kiri{background:#d6f5d6;border:2px solid #d4af37;border-radius:10px;padding:15px}
+.box-kanan{background:#fff;border:2px solid #d4af37;border-radius:10px;padding:10px;overflow:hidden}
+.form-grid{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center;font-size:12px}
+.form-grid label{text-align:right;font-weight:600}
+.form-grid input,.form-grid select{padding:6px;border:1px solid #aaa;border-radius:4px;width:100%}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-2col .form-grid{grid-template-columns:95px 1fr}
+.form-full{grid-template-columns:105px 1fr; margin-bottom:8px}
+.form-full input{width:100% !important; font-weight:600}
+.btn-simpan{background:#007bff;color:#fff;border:none;padding:9px 30px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:13px;margin-top:12px}
+.btn-batal{background:#6c757d;color:#fff;border:none;padding:9px 20px;border-radius:5px;font-weight:bold;cursor:pointer;display:none;margin-top:12px;margin-left:5px}
+p.sub{text-align:center;font-size:12px;font-weight:bold;color:green;margin:10px 0 0 0}
+.lokasi-wrap{display:flex;gap:6px;align-items:center}
+.lokasi-wrap select{flex:none; min-width:260px !important; width:260px !important; padding:7px 10px !important; font-weight:600; font-size:12px}
+.btn-plusminus{width:32px;height:30px;border:1px solid #aaa;border-radius:4px;font-weight:bold;cursor:pointer;background:#fff;font-size:16px}
+.btn-plusminus:hover{background:#d4af37}
+.stack-lokasi-status{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.table-wrap{overflow-x:auto; border:1px solid #ccc; border-radius:5px}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:1050px}
+th{background:#d4af37;padding:8px 4px;border:1px solid #aaa;white-space:nowrap;font-size:11px;position:sticky;top:0;z-index:2}
+td{padding:6px 4px;border:1px solid #ddd;text-align:center;vertical-align:middle;background:#fff}
+td img{width:45px;height:32px;object-fit:cover;border-radius:4px;background:#000}
+th.aksi-col, td.aksi-col{position:sticky;right:0;background:#fffbe6;z-index:5;min-width:210px;width:210px;box-shadow:-4px 0 6px rgba(0,0,0,.2)}
+th.aksi-col{background:#d4af37;z-index:6}
+.aksi-wrap{display:flex;gap:4px;justify-content:center}
+.btn{padding:6px 8px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;white-space:nowrap}
+.btn-detail{background:#17a2b8;color:#fff}
+.btn-edit{background:#ffc107;color:#000}
+.btn-hapus{background:#dc3545;color:#fff}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr} .lokasi-wrap select{min-width:200px !important; width:200px !important}}
+</style>
+</head>
+<body>
+<h2>INFORMASI ARMADA MOBIL & SEPEDA MOTOR</h2>
+<div class="wrap">
+<div class="box-kiri">
+<form id="formMobil">
+<!-- NAMA & ALAMAT FULL SAMPAI BATAS KANAN BEB -->
+<div class="form-grid form-full"><label>Nama Pemilik :</label><input id="nama_pemilik" required placeholder="Nama lengkap pemilik"></div>
+<div class="form-grid form-full"><label>Alamat Pemilik :</label><input id="alamat_pemilik" placeholder="Alamat lengkap pemilik"></div>
+
+<div class="form-2col">
+<div>
+<div class="form-grid"><label>No. Polisi :</label><input id="plat" required></div>
+<div class="form-grid"><label>Status :</label><select id="status_milik"><option>Milik Sendiri</option><option>Sewa</option><option>Titipan</option></select></div>
+<div class="form-grid"><label>Warna :</label><input id="warna"></div>
+<div class="form-grid"><label>Bahan Bakar :</label><input id="bahan_bakar"></div>
+<div class="form-grid"><label>Transmisi :</label><select id="transmisi"><option>- Pilih -</option><option>Matic</option><option>Manual</option></select></div>
+<div class="form-grid"><label>No Mesin :</label><input id="no_mesin"></div>
+<div class="form-grid"><label>Harga/Hari :</label><input id="harga" type="number"></div>
+</div>
+<div>
+<div class="form-grid"><label>Merk :</label><input id="merk"></div>
+<div class="form-grid"><label>Type :</label><input id="type"></div>
+<div class="form-grid"><label>Tahun :</label><input id="tahun" type="number"></div>
+<div class="form-grid"><label>Isi Silinder :</label><input id="cc"></div>
+<div class="form-grid"><label>Jumlah Penumpang :</label><input id="penumpang" type="number" value="4"></div>
+<div class="form-grid"><label>No Rangka :</label><input id="no_rangka"></div>
+<div class="form-grid"><label>No. BPKB :</label><input id="no_bpkb"></div>
+<div class="form-grid"><label>Berlaku Sd :</label><input id="berlaku_sd" type="date"></div>
+<div class="form-grid"><label>Foto Mobil :</label><input id="foto"></div>
+<div class="form-grid"><label></label><input type="file" id="fotoFile" accept="image/*"></div>
+</div>
+</div>
+
+<div class="stack-lokasi-status">
+  <div class="form-grid" style="grid-template-columns:95px 1fr">
+    <label>Lokasi :</label>
+    <div class="lokasi-wrap">
+      <select id="lokasi"></select>
+      <button type="button" class="btn-plusminus" onclick="tambahLokasi()">+</button>
+      <button type="button" class="btn-plusminus" onclick="hapusLokasi()">-</button>
+    </div>
+  </div>
+  <div class="form-grid" style="grid-template-columns:95px 160px">
+    <label>Status Unit :</label>
+    <select id="status_mobil"><option>Ada</option><option>Keluar</option><option>Service</option><option>Rusak</option></select>
+  </div>
+</div>
+
+<div><button type="submit" class="btn-simpan" id="btnSimpan">Simpan</button><button type="button" id="btnBatal" class="btn-batal" onclick="batalEdit()">Batal</button></div>
+</form>
+<p class="sub" id="statusFirebase">✅ FIREBASE rental2026 TERHUBUNG - Total: 0 unit</p>
+</div>
+
+<div class="box-kanan">
+<div style="display:flex;gap:8px;margin-bottom:8px"><input id="cari" placeholder="🔍 Cari Plat / Nama / Merk / Lokasi..." style="flex:1;padding:7px;border:1px solid #aaa;border-radius:5px" oninput="render()"><button onclick="window.location='index.html'" style="background:#d4af37;border:none;padding:7px 12px;border-radius:5px;font-weight:bold;cursor:pointer">🏠 Dashboard</button></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Foto</th><th>No Polisi</th><th>Nama Pemilik</th><th>Merk</th><th>Type</th><th>Tahun</th><th>Penumpang</th><th>Lokasi</th><th>Status</th><th class="aksi-col">Aksi</th></tr></thead>
+<tbody id="tbodyMobil"><tr><td colspan="10">⏳ Loading 38 unit...</td></tr></tbody>
+</table>
+</div>
+<div style="text-align:center;font-size:11px;margin-top:6px;color:#666">👉 Geser tabel ke kiri/kanan beb kalau di HP</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const WA_TOKEN = "ISI_TOKEN_FONNTE_DI_HP_SENDIRI";
+const NOMOR_OWNER = "6282340152478";
+async function kirimWAOwnerSilent(pesan){
+  try{
+    let fd = new FormData(); fd.append("target", NOMOR_OWNER); fd.append("message", pesan);
+    let res = await fetch("https://api.fonnte.com/send", { method: "POST", headers: { "Authorization": WA_TOKEN }, body: fd });
+    let d = await res.json(); console.log("WA silent armada:", d);
+  }catch(e){ console.log("WA silent gagal:", e); }
+}
+let listLokasi = JSON.parse(localStorage.getItem('master_lokasi_rental2026')||'null') || ["Garasi Pusat","Garasi Sawan","Garasi Singaraja","Pool Denpasar","Cabang Gilimanuk","Jimbaran","Ubud"];
+function simpanLokasiStorage(){ localStorage.setItem('master_lokasi_rental2026', JSON.stringify(listLokasi)); }
+function renderLokasiDropdown(selectedValue){
+  let sel = document.getElementById('lokasi');
+  let val = "";
+  if(selectedValue !== undefined && selectedValue !== null){
+    val = selectedValue;
+  } else {
+    val = sel.value || "";
+  }
+  sel.innerHTML = '<option value="">- Pilih Lokasi -</option>' + listLokasi.map(l=>`<option value="${l}">${l}</option>`).join('');
+  sel.value = val;
+}
+window.tambahLokasi = function(){
+  let nama = prompt('Masukkan nama Lokasi baru beb:'); if(!nama) return; nama=nama.trim(); if(!nama) return;
+  if(listLokasi.includes(nama)){ alert('Sudah ada beb!'); document.getElementById('lokasi').value=nama; return; }
+  listLokasi.push(nama); simpanLokasiStorage(); renderLokasiDropdown(nama);
+  addDoc(collection(db, "master_lokasi"), {nama: nama, created: new Date().toISOString()}).catch(()=>{});
+  alert('✅ Lokasi "'+nama+'" ditambah beb!');
+}
+window.hapusLokasi = function(){
+  let sel=document.getElementById('lokasi'); let cur=sel.value;
+  if(!cur){ alert('Pilih dulu Lokasi yang mau dihapus beb!'); return; }
+  if(!confirm('Yakin hapus lokasi "'+cur+'" beb?')) return;
+  listLokasi=listLokasi.filter(l=>l!==cur); simpanLokasiStorage(); renderLokasiDropdown(""); alert('✅ Dihapus beb!');
+}
+renderLokasiDropdown("");
+try{ onSnapshot(collection(db, "master_lokasi"), s=>{
+  let fromFB = s.docs.map(d=>d.data().nama).filter(Boolean);
+  if(fromFB.length>0){ let gabung=[...new Set([...listLokasi, ...fromFB])]; if(gabung.length!=listLokasi.length){ listLokasi=gabung; simpanLokasiStorage(); let cur=document.getElementById('lokasi').value; if(cur) renderLokasiDropdown(cur); } }
+}); }catch(e){}
+let dataMobil = []; let idEdit = null; let fotoBase64 = '';
+document.getElementById('fotoFile').addEventListener('change', function(e){
+  let f=e.target.files[0]; if(!f) return;
+  let r=new FileReader(); r.onload=function(ev){
+    let img=new Image(); img.onload=function(){ let c=document.createElement('canvas'); let s=Math.min(1,800/img.width); c.width=img.width*s; c.height=img.height*s; c.getContext('2d').drawImage(img,0,0,c.width,c.height); fotoBase64=c.toDataURL('image/jpeg',0.7); document.getElementById('foto').value=fotoBase64; }; img.src=ev.target.result;
+  }; r.readAsDataURL(f);
+});
+onSnapshot(collection(db, "armada_mobil"), s=>{
+  dataMobil = s.docs.map(d=>({id:d.id, ...d.data()}));
+  document.getElementById('statusFirebase').innerText = '✅ FIREBASE rental2026 TERHUBUNG - Total: ' + dataMobil.length + ' unit';
+  render();
+});
+window.render = function(){
+  let cari=(document.getElementById('cari').value||'').toLowerCase();
+  let list=dataMobil.filter(m => (m.plat||'').toLowerCase().includes(cari) || (m.nama_pemilik||'').toLowerCase().includes(cari) || (m.merk||'').toLowerCase().includes(cari) || (m.lokasi||'').toLowerCase().includes(cari));
+  let tbody=document.getElementById('tbodyMobil');
+  if(list.length==0){ tbody.innerHTML='<tr><td colspan="10">Belum ada armada beb</td></tr>'; return; }
+  tbody.innerHTML='';
+  list.forEach(m=>{
+    let status=m.status_mobil||m.status||'Ada';
+    tbody.innerHTML+=`<tr>
+      <td><img src="${m.foto||m.foto_mobil||'https://placehold.co/45x32/0a1629/d4af37?text=No'}" onerror="this.src='https://placehold.co/45x32/0a1629/d4af37?text=No'"></td>
+      <td><b>${m.plat||'-'}</b></td>
+      <td>${m.nama_pemilik||'-'}</td>
+      <td>${m.merk||'-'}</td>
+      <td>${m.type||'-'}</td>
+      <td>${m.tahun||'-'}</td>
+      <td>${m.penumpang||'4'}</td>
+      <td><b style="color:#0a6a0a">${m.lokasi||'-'}</b></td>
+      <td>${status}</td>
+      <td class="aksi-col"><div class="aksi-wrap">
+        <button class="btn btn-detail" data-id="${m.id}" data-act="detail">Detail</button>
+        <button class="btn btn-edit" data-id="${m.id}" data-act="edit">✏️ Edit</button>
+        <button class="btn btn-hapus" data-id="${m.id}" data-act="hapus">❌ Hapus</button>
+      </div></td>
+    </tr>`;
+  });
+  tbody.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      let id=btn.dataset.id;
+      if(btn.dataset.act=='detail') detailMobil(id);
+      if(btn.dataset.act=='edit') editMobil(id);
+      if(btn.dataset.act=='hapus') hapusMobil(id);
+    });
+  });
+};
+window.detailMobil = function(id){
+  let m=dataMobil.find(x=>x.id==id); if(!m) return;
+  alert('DETAIL ARMADA\n\nPlat: '+(m.plat||'')+'\nNama: '+(m.nama_pemilik||'')+'\nAlamat: '+(m.alamat_pemilik||'')+'\nMerk: '+(m.merk||'')+'\nLokasi: '+(m.lokasi||'-')+'\nStatus: '+(m.status_mobil||''));
+};
+window.editMobil = function(id){
+  let m=dataMobil.find(x=>x.id==id); if(!m) return;
+  idEdit=id;
+  document.getElementById('plat').value=m.plat||'';
+  document.getElementById('nama_pemilik').value=m.nama_pemilik||'';
+  document.getElementById('alamat_pemilik').value=m.alamat_pemilik||'';
+  document.getElementById('status_milik').value=m.status_milik||'Milik Sendiri';
+  document.getElementById('warna').value=m.warna||'';
+  document.getElementById('bahan_bakar').value=m.bahan_bakar||'';
+  document.getElementById('transmisi').value=m.transmisi||'- Pilih -';
+  document.getElementById('no_mesin').value=m.no_mesin||'';
+  document.getElementById('harga').value=m.harga||'';
+  document.getElementById('merk').value=m.merk||'';
+  document.getElementById('type').value=m.type||'';
+  document.getElementById('tahun').value=m.tahun||'';
+  document.getElementById('cc').value=m.cc||'';
+  document.getElementById('penumpang').value=m.penumpang||'';
+  document.getElementById('no_rangka').value=m.no_rangka||'';
+  document.getElementById('no_bpkb').value=m.no_bpkb||'';
+  document.getElementById('berlaku_sd').value=m.berlaku_sd||'';
+  document.getElementById('foto').value=m.foto||m.foto_mobil||'';
+  if(m.lokasi && !listLokasi.includes(m.lokasi)){ listLokasi.push(m.lokasi); simpanLokasiStorage(); }
+  if(m.lokasi){ renderLokasiDropdown(m.lokasi); } else { renderLokasiDropdown(""); }
+  document.getElementById('status_mobil').value=m.status_mobil||'Ada';
+  document.getElementById('btnSimpan').innerText='Update';
+  document.getElementById('btnBatal').style.display='inline-block';
+  window.scrollTo(0,0);
+};
+window.batalEdit = function(){
+  idEdit=null; document.getElementById('formMobil').reset(); renderLokasiDropdown("");
+  document.getElementById('btnSimpan').innerText='Simpan'; document.getElementById('btnBatal').style.display='none';
+};
+window.hapusMobil = async function(id){
+  let m=dataMobil.find(x=>x.id==id); if(!m) return;
+  if(!confirm('Yakin mau hapus?\nPlat: '+(m.plat||''))) return;
+  let waktu=new Date().toLocaleString('id-ID');
+  let pesan=`⚠️ *ALERT HAPUS ARMADA* ⚠️\nWaktu: ${waktu}\nPlat: ${m.plat}\nNama: ${m.nama_pemilik}\nMerk: ${m.merk}\nLokasi: ${m.lokasi||'-'}\nStatus: ${m.status_mobil||'Ada'}`;
+  kirimWAOwnerSilent(pesan);
+  try{ await addDoc(collection(db, "log_hapus"), {waktu: waktu, plat: m.plat, nama: m.nama_pemilik}); }catch(e){}
+  try{ await deleteDoc(doc(db, "armada_mobil", id)); alert('✅ Dihapus beb!'); }catch(e){ alert('❌ Gagal: '+e.message); }
+};
+document.getElementById('formMobil').addEventListener('submit', async function(e){
+  e.preventDefault();
+  let data={
+    plat: document.getElementById('plat').value,
+    nama_pemilik: document.getElementById('nama_pemilik').value,
+    alamat_pemilik: document.getElementById('alamat_pemilik').value,
+    status_milik: document.getElementById('status_milik').value,
+    warna: document.getElementById('warna').value,
+    bahan_bakar: document.getElementById('bahan_bakar').value,
+    transmisi: document.getElementById('transmisi').value,
+    no_mesin: document.getElementById('no_mesin').value,
+    harga: document.getElementById('harga').value,
+    merk: document.getElementById('merk').value,
+    type: document.getElementById('type').value,
+    tahun: document.getElementById('tahun').value,
+    cc: document.getElementById('cc').value,
+    penumpang: document.getElementById('penumpang').value,
+    no_rangka: document.getElementById('no_rangka').value,
+    no_bpkb: document.getElementById('no_bpkb').value,
+    berlaku_sd: document.getElementById('berlaku_sd').value,
+    foto: document.getElementById('foto').value,
+    lokasi: document.getElementById('lokasi').value,
+    status_mobil: document.getElementById('status_mobil').value
+  };
+  try{
+    if(idEdit){ await updateDoc(doc(db, "armada_mobil", idEdit), data); alert('✅ Update berhasil!'); }
+    else { await addDoc(collection(db, "armada_mobil"), data); alert('✅ Tambah berhasil!'); }
+    batalEdit();
+  }catch(err){ alert('❌ Gagal beb: '+err.message); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>APAMA RENTAL - Login</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Arial;background:#0a1629;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.login-box{background:#12233a;width:100%;max-width:400px;border-radius:16px;padding:30px 25px;box-shadow:0 10px 30px rgba(0,0,0,0.5);border:1px solid #1e3a5f}
+.logo{text-align:center;color:#ff7a00;font-size:26px;font-weight:900;margin:0}
+.sub{text-align:center;color:#94a3b8;font-size:12px;margin:5px 0 20px 0}
+label{color:#cbd5e1;font-size:11px;font-weight:700;display:block;margin:15px 0 6px 0}
+select,input{width:100%;padding:13px;background:#1e293b;border:1px solid #334155;border-radius:10px;color:white;font-size:14px;outline:none}
+select:focus,input:focus{border-color:#ff7a00}
+.btn-orange{background:#ff7a00;color:white;border:none;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-top:18px}
+.btn-ungu{background:#8b5cf6;color:white;border:none;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;margin-top:12px}
+.btn-kecil{background:#334155;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px;margin-top:6px}
+.divider{display:flex;align-items:center;gap:10px;color:#64748b;font-size:11px;margin:20px 0 0 0}
+.divider:before,.divider:after{content:"";flex:1;height:1px;background:#334155}
+#status{font-size:11px;text-align:center;margin-top:10px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <p class="logo">🚗 APAMA RENTAL</p>
+  <p class="sub">Sistem Rental Mobil Premium</p>
+  <p id="status" style="color:#fbbf24;">⏳ Memuat daftar user dari Firestore...</p>
+  <label>PILIH USER</label>
+  <select id="pilihUser"><option value="">-- Pilih Nama Anda --</option></select>
+  <label style="margin-top:12px;">PASSWORD</label>
+  <input type="password" id="passwordUser" placeholder="Masukkan Password">
+  <button class="btn-orange" onclick="loginUser()">➡️ LOGIN</button>
+  <div class="divider">ATAU MASTER KEY</div>
+  <label>MASTER KEY</label>
+  <input type="password" id="masterKey" placeholder="Masukkan Master Key -" autocomplete="off">
+  <label>PASSWORD</label>
+  <input type="password" id="passwordMaster" placeholder="Masukkan Password -" autocomplete="off">
+  <button class="btn-kecil" onclick="lihatPass()">👁️ Lihat Password</button>
+  <button class="btn-ungu" onclick="loginMaster()">👑 LOGIN MASTER KEY</button>
+  <p style="text-align:center;color:#64748b;font-size:11px;margin-top:15px;">User dibuat di Tools -> <a href="tools.html" style="color:#ff7a00;">Buka Tools</a></p>
+  <p id="debugLogin" style="text-align:center;color:#64748b;font-size:11px;margin-top:10px;"></p>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ⚠️ ISI DI HP BAPAK SENDIRI, JANGAN DIKIRIM KE SINI
+// Ganti 2 baris di bawah ini dengan masterkey + password Bapak yang baru
+const MASTER_KEY_BENAR = "mid241195";
+const PASSWORD_MASTER_BENAR = "19032014";
+
+let daftarUser = {};
+db.collection("users").onSnapshot((snap)=>{
+  let select = document.getElementById('pilihUser');
+  select.innerHTML = '<option value="">-- Pilih Nama Anda --</option>';
+  daftarUser = {};
+  if(snap.empty){
+    document.getElementById('status').innerText = "⚠️ Belum ada user di Firestore! Buat dulu di Tools beb.";
+    document.getElementById('status').style.color = "#ef4444";
+    return;
+  }
+  snap.forEach(doc=>{
+    let u = doc.data();
+    daftarUser[u.username] = u;
+    let opt = document.createElement('option');
+    opt.value = u.username;
+    opt.textContent = (u.nama || u.username) + " (" + (u.role || '') + ")";
+    select.appendChild(opt);
+  });
+  document.getElementById('status').innerText = "✅ Ketemu " + snap.size + " user - Silahkan pilih nama Anda";
+  document.getElementById('status').style.color = "#22c55e";
+}, (err)=>{
+  document.getElementById('status').innerText = "⚠️ Firebase gak nyambung: " + err.message + " - Tapi Login Master tetep bisa beb!";
+  document.getElementById('status').style.color = "#f59e0b";
+});
+function bersihTeks(t){
+  // Buang spasi depan-belakang + spasi yang ke-ketik gak sengaja di tengah
+  // + ubah huruf besar otomatis dari HP jadi kecil semua biar gak gagal
+  return String(t || '').trim().replace(/\s+/g, '');
+}
+function simpanLoginBersih(dataLogin){
+  localStorage.removeItem("apama_user");
+  localStorage.setItem("apama_user", JSON.stringify(dataLogin));
+}
+function loginUser(){
+  let username = document.getElementById('pilihUser').value;
+  let pass = document.getElementById('passwordUser').value;
+  if(!username){ alert("Pilih dulu nama Anda beb!"); return; }
+  if(!pass){ alert("Masukkan password beb!"); return; }
+  let u = daftarUser[username];
+  if(!u){ alert("User tidak ditemukan beb!"); return; }
+  if(String(u.password) === String(pass)){
+    simpanLoginBersih({username: u.username, nama: u.nama, role: u.role, isMaster: false});
+    alert("✅ Selamat datang " + (u.nama || username));
+    window.location = "dashboard.html";
+  } else { alert("❌ Password salah beb!"); }
+}
+function loginMaster(){
+  let key = bersihTeks(document.getElementById('masterKey').value);
+  let pass = bersihTeks(document.getElementById('passwordMaster').value);
+  let keyBenar = bersihTeks(MASTER_KEY_BENAR);
+  let passBenar = bersihTeks(PASSWORD_MASTER_BENAR);
+  if(!key || !pass){ alert("Isi Master Key + Password dulu beb!"); return; }
+  if(key === keyBenar && pass === passBenar){
+    simpanLoginBersih({username:"master", nama:"Master", role:"Admin/Owner", isMaster: true});
+    alert("✅ Login Master berhasil beb!");
+    window.location = "dashboard.html";
+  } else {
+    // Kasih tau yang mana yang salah, biar gak nebak-nebak
+    let salahKey = key !== keyBenar;
+    let salahPass = pass !== passBenar;
+    let pesan = "❌ Gagal beb!\n";
+    if(salahKey) pesan += "- Master Key salah (cek huruf / angka)\n";
+    if(salahPass) pesan += "- Password salah (cek huruf besar-kecil & simbol)\n";
+    pesan += "\nYang Bapak ketik:\nKey: " + key + " (" + key.length + " karakter)\nPass: " + pass.length + " karakter";
+    alert(pesan);
+    document.getElementById('debugLogin').innerText = "Key yang diketik: " + key + " | Panjang pass: " + pass.length;
+  }
+}
+window.lihatPass = function(){
+  let a = document.getElementById('masterKey');
+  let b = document.getElementById('passwordMaster');
+  let tipe = a.type === 'password' ? 'text' : 'password';
+  a.type = tipe; b.type = tipe;
+}
+</script>
+</body>
+</html>

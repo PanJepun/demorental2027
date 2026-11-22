@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DATA PIUTANG</title>
+<style>
+body { font-family: 'Segoe UI', Arial; background: #0a1629; margin: 0; padding: 15px; color: #333; }
+h2 { text-align: center; color: #d4af37; font-size: 20px; margin: 5px 0 15px 0; font-weight: bold; }
+.box { background: white; border: 2px solid #d4af37; border-radius: 8px; padding: 20px; max-width: 1300px; margin: auto; }
+.tabel-piutang { width:100%; border-collapse:collapse; font-size:12px; }
+.tabel-piutang th { background:#dc3545; color:#fff; padding:8px; text-align:center; }
+.tabel-piutang td { border:1px solid #ddd; padding:6px; text-align:center; }
+.tabel-piutang tr:nth-child(even){ background:#fff5f5; }
+.badge-kredit { background:#ffc107; color:black; padding:3px 8px; border-radius:3px; font-size:11px; font-weight:bold; }
+.badge-belum { background:#dc3545; color:white; padding:3px 8px; border-radius:3px; font-size:11px; font-weight:bold; }
+.btn-bayar { background:#28a745; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; font-size:11px; font-weight:bold; }
+.btn-back { background:#6c757d; color:#fff; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom:10px; }
+.total-box { background: #dc3545; color: #fff; padding: 12px; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold; margin-bottom:15px; }
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+.modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 40%; border: 2px solid #d4af37; }
+.form-bayar { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; }
+.btn-simpan-bayar { background:#28a745; color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold; grid-column:2/3; }
+</style>
+</head>
+<body>
+<h2>DATA PIUTANG CUSTOMER</h2>
+<div class="box">
+    <button class="btn-back" onclick="window.location='transaksi.html'">← Kembali ke Transaksi</button>
+    <p id="statusFirebase" style="font-size:12px;text-align:center;font-weight:bold;">⏳ Menghubungkan ke Firebase fir-panjepun...</p>
+    <div class="total-box">TOTAL PIUTANG: Rp <span id="total_piutang">0</span></div>
+    <div style="overflow-x:auto;">
+        <table class="tabel-piutang">
+            <thead>
+                <tr>
+                    <th>No</th><th>No Invoice</th><th>Customer</th><th>Mobil</th>
+                    <th>Tgl Sewa</th><th>Total</th><th>Deposit</th><th>Sisa Piutang</th><th>Status</th><th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyPiutang"><tr><td colspan="10">Tidak ada data piutang</td></tr></tbody>
+        </table>
+    </div>
+</div>
+<div id="modalBayar" class="modal">
+  <div class="modal-content">
+    <h3>BAYAR PIUTANG</h3>
+    <form id="formBayar" class="form-bayar">
+        <label>No Invoice :</label><input type="text" id="bayar_invoice" readonly>
+        <label>Nama :</label><input type="text" id="bayar_nama" readonly>
+        <label>Sisa Piutang :</label><input type="text" id="bayar_sisa" readonly>
+        <label>Bayar :</label><input type="number" id="bayar_nominal" placeholder="0" required>
+        <label>Upload Bukti :</label><input type="file" id="bayar_bukti" accept="image/*">
+        <div style="grid-column:2/3;"><button type="submit" class="btn-simpan-bayar">SIMPAN PEMBAYARAN</button></div>
+    </form>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBI79kjr4WGpmh3OvUxKXcgRao8PMCcxIY",
+  authDomain: "fir-panjepun.firebaseapp.com",
+  projectId: "fir-panjepun",
+  storageBucket: "fir-panjepun.firebasestorage.app",
+  messagingSenderId: "399104502129",
+  appId: "1:399104502129:web:3230853484a64d220c2ed0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+let dataCustomer = [];
+let dataCustomerReguler = [];
+let dataMobil = [];
+let dataTransaksi = [];
+let idBayar = null;
+let sisaBayarAktif = 0;
+onSnapshot(collection(db, "transaksi"), s => {
+  dataTransaksi = s.docs.map(d=>({id:d.id, ...d.data()}));
+  document.getElementById('statusFirebase').innerText = '✅ FIREBASE fir-panjepun TERHUBUNG - Total: ' + dataTransaksi.length + ' transaksi';
+  document.getElementById('statusFirebase').style.color = 'green';
+  loadTabelPiutang();
+});
+onSnapshot(collection(db, "customer"), s => { dataCustomer = s.docs.map(d=>({id:d.id, ...d.data()})); loadTabelPiutang(); });
+onSnapshot(collection(db, "customer_reguler"), s => { dataCustomerReguler = s.docs.map(d=>({id:d.id, ...d.data()})); loadTabelPiutang(); });
+onSnapshot(collection(db, "armada_mobil"), s => { dataMobil = s.docs.map(d=>({id:d.id, ...d.data()})); loadTabelPiutang(); });
+function getNamaCustomer(t){
+  if(t.nama_customer) return t.nama_customer;
+  let c1 = dataCustomer.find(c=>c.id==t.id_customer);
+  if(c1) return c1.nama_customer || '-';
+  let c2 = dataCustomerReguler.find(c=>c.id==t.id_customer);
+  if(c2) return c2.nama_customer || '-';
+  return '-';
+}
+function getPlat(t){
+  if(t.plat) return t.plat;
+  let m = dataMobil.find(m=>m.id==t.id_mobil);
+  return m ? (m.plat || '-') : '-';
+}
+function getSisa(t){
+  return parseInt(t.sisa_piutang) || (parseInt(t.total_bayar || 0) - parseInt(t.deposit || 0));
+}
+function loadTabelPiutang(){
+    let tbody = document.getElementById('tbodyPiutang');
+    let piutangData = dataTransaksi.filter(t => t.status_bayar == 'Belum Lunas' && t.tipe_customer == 'kredit');
+    if(piutangData.length == 0){
+        tbody.innerHTML = '<tr><td colspan="10">Tidak ada data piutang</td></tr>';
+        document.getElementById('total_piutang').innerText = '0';
+        return;
+    }
+    tbody.innerHTML = '';
+    let total = 0;
+    piutangData.forEach((t, i) => {
+        let sisa = getSisa(t);
+        total += sisa;
+        tbody.innerHTML += `<tr>
+            <td>${i+1}</td>
+            <td>${t.no_invoice || '-'}</td>
+            <td>${getNamaCustomer(t)}</td>
+            <td>${getPlat(t)}</td>
+            <td>${t.tgl_sewa || t.tanggal_sewa || '-'}</td>
+            <td>Rp ${parseInt(t.total_bayar || 0).toLocaleString('id-ID')}</td>
+            <td>Rp ${parseInt(t.deposit || 0).toLocaleString('id-ID')}</td>
+            <td style="font-weight:bold; color:red;">Rp ${sisa.toLocaleString('id-ID')}</td>
+            <td><span class="badge-belum">BELUM LUNAS</span></td>
+            <td><button class="btn-bayar" data-id="${t.id}">BAYAR</button></td>
+        </tr>`;
+    });
+    document.getElementById('total_piutang').innerText = total.toLocaleString('id-ID');
+    tbody.querySelectorAll('button').forEach(b=>{ b.onclick = ()=> bukaBayar(b.dataset.id); });
+}
+window.bukaBayar = function(id){
+    idBayar = id;
+    let t = dataTransaksi.find(x=>x.id==id); if(!t) return;
+    document.getElementById('bayar_invoice').value = t.no_invoice || '';
+    document.getElementById('bayar_nama').value = getNamaCustomer(t);
+    let sisa = getSisa(t);
+    sisaBayarAktif = sisa;
+    document.getElementById('bayar_sisa').value = 'Rp ' + sisa.toLocaleString('id-ID');
+    document.getElementById('bayar_nominal').max = sisa;
+    document.getElementById('bayar_nominal').value = '';
+    document.getElementById('modalBayar').style.display = 'block';
+}
+document.getElementById('formBayar').addEventListener('submit', async function(e){
+    e.preventDefault();
+    let t = dataTransaksi.find(x=>x.id==idBayar); if(!t) return;
+    let bayar = parseInt(document.getElementById('bayar_nominal').value) || 0;
+    if(bayar <= 0){ alert('Isi nominal bayar dulu beb!'); return; }
+    if(bayar > sisaBayarAktif){ alert('Bayar melebihi sisa piutang!'); return; }
+    let sisaBaru = sisaBayarAktif - bayar;
+    let depositBaru = parseInt(t.deposit || 0) + bayar;
+    let riwayat = Array.isArray(t.riwayat_bayar) ? [...t.riwayat_bayar] : [];
+    let file = document.getElementById('bayar_bukti').files[0];
+    let buktiBase64 = '';
+    if(file){
+      buktiBase64 = await new Promise(res=>{
+        let r = new FileReader();
+        r.onload = ev => {
+          let img = new Image();
+          img.onload = ()=>{
+            let cv = document.createElement('canvas');
+            let sc = Math.min(1, 800 / img.width);
+            cv.width = img.width * sc; cv.height = img.height * sc;
+            cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+            res(cv.toDataURL('image/jpeg',0.7));
+          };
+          img.src = ev.target.result;
+        };
+        r.readAsDataURL(file);
+      });
+    }
+    riwayat.push({tanggal: new Date().toLocaleDateString('id-ID'), nominal: bayar, bukti: buktiBase64});
+    try{
+      await updateDoc(doc(db, "transaksi", idBayar), {
+        deposit: depositBaru,
+        sisa_piutang: sisaBaru,
+        status_bayar: sisaBaru <= 0 ? 'Lunas' : 'Belum Lunas',
+        status: sisaBaru <= 0 ? 'Lunas' : t.status,
+        riwayat_bayar: riwayat
+      });
+      alert('✅ Pembayaran Rp ' + bayar.toLocaleString('id-ID') + ' berhasil disimpan!');
+      document.getElementById('modalBayar').style.display = 'none';
+      document.getElementById('formBayar').reset();
+    }catch(err){ alert('❌ GAGAL: ' + err.message); }
+});
+window.onclick = function(event) {
+    if (event.target == document.getElementById('modalBayar')) {
+        document.getElementById('modalBayar').style.display = "none";
+    }
+}
+</script>
+</body>
+</html>
